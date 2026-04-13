@@ -10,14 +10,14 @@ class CustomTextField extends StatelessWidget {
   final Widget? prefixIcon;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     required this.label,
     required this.hint,
     this.controller,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.prefixIcon,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
