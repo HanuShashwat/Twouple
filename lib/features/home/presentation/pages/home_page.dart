@@ -153,56 +153,92 @@ class _DashboardViewState extends State<_DashboardView> {
   Widget _buildLineChartWidget(List<FlSpot> spots, List<String> daysMap) {
     return Container(
       padding: const EdgeInsets.only(top: 16),
-      child: LineChart(
-        LineChartData(
-          lineTouchData: LineTouchData(
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (touchedSpot) => AppColors.surface,
-              getTooltipItems: (touchedSpots) {
-                return touchedSpots.map((spot) => LineTooltipItem(
-                  'Energy Score: ${spot.y}\n${daysMap[spot.x.toInt()]}',
-                  const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                )).toList();
-              },
-            ),
-          ),
-          gridData: const FlGridData(show: false),
-          titlesData: FlTitlesData(
-            show: true,
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 22,
-                interval: 1,
-                getTitlesWidget: (value, meta) {
-                  if (value % 1 == 0 && value.toInt() >= 0 && value.toInt() < daysMap.length) {
-                     return Text(daysMap[value.toInt()], style: const TextStyle(fontSize: 10, color: AppColors.textSecondary));
-                  }
-                  return const Text('');
-                },
-              ),
-            ),
-            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          ),
-          borderData: FlBorderData(show: false),
-          lineBarsData: [
-            LineChartBarData(
-              spots: spots,
-              isCurved: true,
-              color: AppColors.primary,
-              barWidth: 4,
-              dotData: const FlDotData(show: false),
-              belowBarData: BarAreaData(
-                show: true,
-                color: AppColors.primary.withValues(alpha: 0.2),
-              ),
-            ),
-          ],
-        ),
-        duration: const Duration(milliseconds: 1000),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 1400),
         curve: Curves.easeOutCubic,
+        builder: (context, animValue, _) {
+          final animatedSpots = spots.map((e) => FlSpot(e.x, e.y * animValue)).toList();
+          
+          return LineChart(
+            LineChartData(
+              maxY: 8,
+              minY: 0,
+              lineTouchData: LineTouchData(
+                touchTooltipData: LineTouchTooltipData(
+                  getTooltipColor: (touchedSpot) => AppColors.surface,
+                  getTooltipItems: (touchedSpots) {
+                    return touchedSpots.map((spot) => LineTooltipItem(
+                      'Energy Score: ${(spot.y / (animValue > 0 ? animValue : 1)).toStringAsFixed(1)}\n${daysMap[spot.x.toInt()]}',
+                      const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    )).toList();
+                  },
+                ),
+              ),
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                horizontalInterval: 2,
+                getDrawingHorizontalLine: (value) => FlLine(
+                  color: AppColors.textSecondary.withValues(alpha: 0.1),
+                  strokeWidth: 1,
+                  dashArray: [5, 5],
+                ),
+              ),
+              titlesData: FlTitlesData(
+                show: true,
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 22,
+                    interval: 1,
+                    getTitlesWidget: (value, meta) {
+                      if (value % 1 == 0 && value.toInt() >= 0 && value.toInt() < daysMap.length) {
+                         return Text(daysMap[value.toInt()], style: const TextStyle(fontSize: 10, color: AppColors.textSecondary));
+                      }
+                      return const Text('');
+                    },
+                  ),
+                ),
+                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              ),
+              borderData: FlBorderData(show: false),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: animatedSpots,
+                  isCurved: true,
+                  gradient: const LinearGradient(
+                    colors: [Colors.amberAccent, AppColors.primary],
+                  ),
+                  barWidth: 4,
+                  isStrokeCapRound: true,
+                  dotData: FlDotData(
+                    show: true,
+                    getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+                      radius: 3,
+                      color: AppColors.surface,
+                      strokeWidth: 2,
+                      strokeColor: AppColors.primary,
+                    ),
+                  ),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withValues(alpha: 0.4),
+                        AppColors.primary.withValues(alpha: 0.0),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
