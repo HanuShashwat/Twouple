@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/custom_button.dart';
-import '../../../../core/widgets/custom_button.dart';
 
 class ImportPage extends StatefulWidget {
-  const ImportPage({Key? key}) : super(key: key);
+  const ImportPage({super.key});
 
   @override
   State<ImportPage> createState() => _ImportPageState();

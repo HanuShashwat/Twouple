@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_constants.dart';
 
 class ChatbotPage extends StatefulWidget {
-  const ChatbotPage({Key? key}) : super(key: key);
+  const ChatbotPage({super.key});
 
   @override
   State<ChatbotPage> createState() => _ChatbotPageState();
@@ -50,7 +50,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isUser ? AppColors.primary.withOpacity(0.8) : AppColors.surface,
+                      color: isUser ? AppColors.primary.withValues(alpha: 0.8) : AppColors.surface,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(_messages[index]),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_constants.dart';
 
 class NativeChatPage extends StatefulWidget {
-  const NativeChatPage({Key? key}) : super(key: key);
+  const NativeChatPage({super.key});
 
   @override
   State<NativeChatPage> createState() => _NativeChatPageState();
@@ -39,7 +39,7 @@ class _NativeChatPageState extends State<NativeChatPage> {
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.secondary.withOpacity(0.8),
+                      color: AppColors.secondary.withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(_messages[index]),

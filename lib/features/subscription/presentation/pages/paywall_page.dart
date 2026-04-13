@@ -3,7 +3,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/custom_button.dart';
 
 class PaywallPage extends StatelessWidget {
-  const PaywallPage({Key? key}) : super(key: key);
+  const PaywallPage({super.key});
 
   @override
   Widget build(BuildContext context) {

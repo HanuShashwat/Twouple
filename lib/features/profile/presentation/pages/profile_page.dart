@@ -3,7 +3,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/custom_button.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
