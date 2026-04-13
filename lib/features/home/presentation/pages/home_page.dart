@@ -256,59 +256,57 @@ class _DashboardViewState extends State<_DashboardView> {
               const SizedBox(height: 32),
 
               // Insight Briefing Card
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary.withValues(alpha: 0.15),
-                      AppColors.secondary.withValues(alpha: 0.05),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.auto_awesome, color: AppColors.primary, size: 24),
-                        const SizedBox(width: 8),
-                        Text(
-                          "Today's Insight",
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.bold,
+              Hero(
+                tag: 'insight_card',
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => context.push('/daily-insight'),
+                    borderRadius: BorderRadius.circular(24),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.primary.withValues(alpha: 0.15),
+                            AppColors.secondary.withValues(alpha: 0.05),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.auto_awesome, color: AppColors.primary, size: 24),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Today's Insight",
+                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                               ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      "Mercury has entered your 7th house—expect sudden moments of deep clarity. Focus heavily on communication with those you trust today.",
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            height: 1.5,
-                            fontSize: 16,
+                            ],
                           ),
-                    ),
-                    const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {},
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppColors.secondary,
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(0, 0),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Text('Read More →', style: TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 12),
+                          Text(
+                            "Mercury has entered your 7th house—expect sudden moments of deep clarity. Focus heavily on communication with those you trust today.",
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  height: 1.5,
+                                  fontSize: 15,
+                                ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
