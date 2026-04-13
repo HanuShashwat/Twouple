@@ -7,6 +7,8 @@ abstract class AuthEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class ResetAuthEvent extends AuthEvent {}
+
 class SendOtpEvent extends AuthEvent {
   final String phone;
   const SendOtpEvent(this.phone);

@@ -7,6 +7,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository repository;
 
   AuthBloc(this.repository) : super(AuthInitial()) {
+    on<ResetAuthEvent>((event, emit) => emit(AuthInitial()));
     on<SendOtpEvent>(_onSendOtp);
     on<VerifyOtpEvent>(_onVerifyOtp);
   }

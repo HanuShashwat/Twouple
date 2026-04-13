@@ -103,7 +103,7 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                   child: CustomButton(
                     text: 'Get Started',
                     onPressed: () {
-                      context.go('/phone-input');
+                      context.go('/auth');
                     },
                   ),
                 ),

@@ -1,9 +1,8 @@
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/presentation/pages/phone_input_page.dart';
+import '../../features/auth/presentation/pages/auth_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/pages/landing_page.dart';
-import '../../features/auth/presentation/pages/otp_verify_page.dart';
 import '../../features/auth/presentation/pages/onboarding_birth_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/home/presentation/pages/mode_selector_page.dart';
@@ -26,12 +25,8 @@ class AppRouter {
         builder: (context, state) => const LandingPage(),
       ),
       GoRoute(
-        path: '/phone-input',
-        builder: (context, state) => const PhoneInputPage(),
-      ),
-      GoRoute(
-        path: '/otp-verify',
-        builder: (context, state) => const OtpVerifyPage(),
+        path: '/auth',
+        builder: (context, state) => const AuthPage(),
       ),
       GoRoute(
         path: '/onboarding-birth',
