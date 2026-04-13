@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 
 class ModeSelectorPage extends StatelessWidget {
-  const ModeSelectorPage({Key? key}) : super(key: key);
+  const ModeSelectorPage({super.key});
 
   Widget _buildCard(BuildContext context, String title, String desc, IconData icon, VoidCallback onTap) {
     return InkWell(
