@@ -74,7 +74,7 @@ class _DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<_DashboardView> {
   final TextEditingController _promptController = TextEditingController();
   final PageController _chartPageController = PageController(initialPage: 1);
-  int _currentChartPage = 1;
+
 
   @override
   void dispose() {
@@ -173,183 +173,230 @@ class _DashboardViewState extends State<_DashboardView> {
   Widget _buildLineChartWidget(List<FlSpot> spots, List<String> daysMap, {int? highlightIndex}) {
     return Container(
       padding: const EdgeInsets.only(top: 16),
-      child: LineChart(
-        LineChartData(
-          maxY: 8,
-          minY: 0,
-          lineTouchData: LineTouchData(
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipColor: (touchedSpot) => AppColors.surface,
-              getTooltipItems: (touchedSpots) {
-                return touchedSpots.map((spot) => LineTooltipItem(
-                  'Energy Score: ${(spot.y).toStringAsFixed(1)}\n${daysMap[spot.x.toInt()]}',
-                  const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                )).toList();
-              },
-            ),
-          ),
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            horizontalInterval: 2,
-            getDrawingHorizontalLine: (value) => FlLine(
-              color: AppColors.textSecondary.withValues(alpha: 0.1),
-              strokeWidth: 1,
-              dashArray: [5, 5],
-            ),
-          ),
-          titlesData: FlTitlesData(
-            show: true,
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 22,
-                interval: 1,
-                getTitlesWidget: (value, meta) {
-                  if (value % 1 == 0 && value.toInt() >= 0 && value.toInt() < daysMap.length) {
-                     return Text(daysMap[value.toInt()], style: const TextStyle(fontSize: 10, color: AppColors.textSecondary));
-                  }
-                  return const Text('');
-                },
-              ),
-            ),
-            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          ),
-          borderData: FlBorderData(show: false),
-          lineBarsData: [
-            LineChartBarData(
-              spots: spots,
-              isCurved: true,
-              gradient: const LinearGradient(
-                colors: [Colors.amberAccent, AppColors.primary],
-              ),
-              barWidth: 4,
-              isStrokeCapRound: true,
-              dotData: FlDotData(
-                show: true,
-                getDotPainter: (spot, percent, barData, index) {
-                  final isToday = highlightIndex != null && index == highlightIndex;
-                  return FlDotCirclePainter(
-                    radius: isToday ? 5.0 : 3.0,
-                    color: isToday ? AppColors.secondary : AppColors.surface,
-                    strokeWidth: 2,
-                    strokeColor: isToday ? Colors.white : AppColors.primary,
-                  );
-                },
-              ),
-              belowBarData: BarAreaData(
-                show: true,
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primary.withValues(alpha: 0.4),
-                    AppColors.primary.withValues(alpha: 0.0),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 1400),
+        curve: Curves.easeOutCubic,
+        builder: (context, animValue, _) {
+          final animatedSpots = spots.map((e) => FlSpot(e.x, e.y * animValue)).toList();
+          return LineChart(
+            LineChartData(
+              maxY: 8,
+              minY: 0,
+              lineTouchData: LineTouchData(
+                touchTooltipData: LineTouchTooltipData(
+                  getTooltipColor: (touchedSpot) => AppColors.surface,
+                  getTooltipItems: (touchedSpots) {
+                    return touchedSpots.map((spot) => LineTooltipItem(
+                      'Energy Score: ${(spot.y / (animValue > 0 ? animValue : 1)).toStringAsFixed(1)}\n${daysMap[spot.x.toInt()]}',
+                      const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    )).toList();
+                  },
                 ),
               ),
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                horizontalInterval: 2,
+                getDrawingHorizontalLine: (value) => FlLine(
+                  color: AppColors.textSecondary.withValues(alpha: 0.1),
+                  strokeWidth: 1,
+                  dashArray: [5, 5],
+                ),
+              ),
+              titlesData: FlTitlesData(
+                show: true,
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 22,
+                    interval: 1,
+                    getTitlesWidget: (value, meta) {
+                      if (value % 1 == 0 && value.toInt() >= 0 && value.toInt() < daysMap.length) {
+                         return Text(daysMap[value.toInt()], style: const TextStyle(fontSize: 10, color: AppColors.textSecondary));
+                      }
+                      return const Text('');
+                    },
+                  ),
+                ),
+                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              ),
+              borderData: FlBorderData(show: false),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: animatedSpots,
+                  isCurved: true,
+                  gradient: const LinearGradient(
+                    colors: [Colors.amberAccent, AppColors.primary],
+                  ),
+                  barWidth: 4,
+                  isStrokeCapRound: true,
+                  dotData: FlDotData(
+                    show: true,
+                    getDotPainter: (spot, percent, barData, index) {
+                      final isToday = highlightIndex != null && index == highlightIndex;
+                      return FlDotCirclePainter(
+                        radius: (isToday ? 5.0 : 3.0) * (animValue > 0.2 ? animValue : 0),
+                        color: isToday ? AppColors.secondary : AppColors.surface,
+                        strokeWidth: 2,
+                        strokeColor: isToday ? Colors.white : AppColors.primary,
+                      );
+                    },
+                  ),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withValues(alpha: 0.4),
+                        AppColors.primary.withValues(alpha: 0.0),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        duration: const Duration(milliseconds: 800),
-        curve: Curves.easeOutCubic,
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeOutCubic,
+          );
+        }
       ),
     );
   }
-
-  Widget _buildLineChartSection() {
-    final pastSpots = const [
-      FlSpot(0, 5), FlSpot(1, 4.5), FlSpot(2, 3), FlSpot(3, 4), FlSpot(4, 6), FlSpot(5, 5.5), FlSpot(6, 4)
-    ];
-    final futureSpots = const [
-      FlSpot(0, 4), FlSpot(1, 3.5), FlSpot(2, 5), FlSpot(3, 6), FlSpot(4, 5.5), FlSpot(5, 7), FlSpot(6, 6.5)
-    ];
-
-    return Container(
-      height: 250,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.elevated,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                _currentChartPage == 0 ? 'Energy Trend (Previous Week)' : 'Energy Trend (Upcoming Week)', 
-                style: const TextStyle(fontWeight: FontWeight.bold)
-              ),
-              const Spacer(),
-              const Icon(Icons.swipe_rounded, size: 16, color: AppColors.textSecondary),
-            ],
-          ),
-          Expanded(
-            child: GestureDetector(
-              onHorizontalDragEnd: (details) {
-                if (details.primaryVelocity! > 0 && _currentChartPage == 1) {
-                  setState(() => _currentChartPage = 0); // Swipe right (reveals left)
-                } else if (details.primaryVelocity! < 0 && _currentChartPage == 0) {
-                  setState(() => _currentChartPage = 1); // Swipe left (reveals right)
-                }
-              },
-              child: _currentChartPage == 0 
-                  ? _buildLineChartWidget(pastSpots, _getDaysMap(true))
-                  : _buildLineChartWidget(futureSpots, _getDaysMap(false), highlightIndex: 0),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: _currentChartPage == 0 ? 8 : 6, 
-                height: 6, 
-                decoration: BoxDecoration(
-                  color: _currentChartPage == 0 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
-                  borderRadius: BorderRadius.circular(6)
-                )
-              ),
-              const SizedBox(width: 8),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: _currentChartPage == 1 ? 8 : 6, 
-                height: 6, 
-                decoration: BoxDecoration(
-                  color: _currentChartPage == 1 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
-                  borderRadius: BorderRadius.circular(6)
-                )
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-
 
   void _openGraphPopup(BuildContext context) {
-    showModalBottomSheet(
+    int currentChartPage = 0;
+    
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        height: MediaQuery.of(context).size.height * 0.55,
-        decoration: const BoxDecoration(
-          color: AppColors.background,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.only(top: 16),
-        child: Column(
-          children: [
-            Container(width: 48, height: 4, decoration: BoxDecoration(color: AppColors.textSecondary.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(4))),
-            Expanded(child: _buildLineChartSection()),
-          ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          final pastSpots = const [
+            FlSpot(0, 5), FlSpot(1, 4.5), FlSpot(2, 3), FlSpot(3, 4), FlSpot(4, 6), FlSpot(5, 5.5), FlSpot(6, 4)
+          ];
+          final futureSpots = const [
+            FlSpot(0, 4), FlSpot(1, 3.5), FlSpot(2, 5), FlSpot(3, 6), FlSpot(4, 5.5), FlSpot(5, 7), FlSpot(6, 6.5)
+          ];
+
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(16),
+            child: Container(
+              height: 400,
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.05),
+                    blurRadius: 32,
+                    spreadRadius: 8,
+                  )
+                ]
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        currentChartPage == 0 ? 'Energy Trend (Previous Week)' : 'Energy Trend (Upcoming Week)', 
+                        style: const TextStyle(fontWeight: FontWeight.bold)
+                      ),
+                      const Spacer(),
+                      const Icon(Icons.swipe_rounded, size: 16, color: AppColors.textSecondary),
+                    ],
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onHorizontalDragEnd: (details) {
+                        if (details.primaryVelocity! > 0 && currentChartPage == 1) {
+                          setState(() => currentChartPage = 0); 
+                        } else if (details.primaryVelocity! < 0 && currentChartPage == 0) {
+                          setState(() => currentChartPage = 1); 
+                        }
+                      },
+                      child: currentChartPage == 0 
+                          ? _buildLineChartWidget(pastSpots, _getDaysMap(true))
+                          : _buildLineChartWidget(futureSpots, _getDaysMap(false), highlightIndex: 0),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: currentChartPage == 0 ? 8 : 6, 
+                        height: 6, 
+                        decoration: BoxDecoration(
+                          color: currentChartPage == 0 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
+                          borderRadius: BorderRadius.circular(6)
+                        )
+                      ),
+                      const SizedBox(width: 8),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: currentChartPage == 1 ? 8 : 6, 
+                        height: 6, 
+                        decoration: BoxDecoration(
+                          color: currentChartPage == 1 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
+                          borderRadius: BorderRadius.circular(6)
+                        )
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      ),
+    );
+  }
+
+  void _openVibePopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: AppColors.elevated,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8), 
+                    decoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle), 
+                    child: const Icon(Icons.check, color: AppColors.background, size: 20)
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(child: Text('Vibe Analysis', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.textPrimary))),
+                ]
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Your overall frequency is currently operating in an Optimal Range. The cosmic alignment today provides an excellent baseline for stable emotions and grounded decisions.',
+                style: TextStyle(color: AppColors.textSecondary, height: 1.5, fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Close', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -455,29 +502,32 @@ class _DashboardViewState extends State<_DashboardView> {
               Row(
                 children: [
                    Expanded(
-                     child: Container(
-                       height: 120,
-                       padding: const EdgeInsets.all(16),
-                       decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(16)),
-                       child: Column(
-                         crossAxisAlignment: CrossAxisAlignment.start,
-                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                         children: [
-                            const Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('VIBE\nMONITOR', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                                Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 16),
-                              ]
-                            ),
-                            Row(
-                              children: [
-                                Container(padding: const EdgeInsets.all(4), decoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle), child: const Icon(Icons.check, color: AppColors.background, size: 12)),
-                                const SizedBox(width: 8),
-                                const Text('OPTIMAL\nRANGE', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold, fontSize: 12)),
-                              ]
-                            )
-                         ]
+                     child: GestureDetector(
+                       onTap: () => _openVibePopup(context),
+                       child: Container(
+                         height: 120,
+                         padding: const EdgeInsets.all(16),
+                         decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(16)),
+                         child: Column(
+                           crossAxisAlignment: CrossAxisAlignment.start,
+                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                           children: [
+                              const Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('VIBE\nMONITOR', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                                  Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 16),
+                                ]
+                              ),
+                              Row(
+                                children: [
+                                  Container(padding: const EdgeInsets.all(4), decoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle), child: const Icon(Icons.check, color: AppColors.background, size: 12)),
+                                  const SizedBox(width: 8),
+                                  const Text('OPTIMAL\nRANGE', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold, fontSize: 12)),
+                                ]
+                              )
+                           ]
+                         ),
                        ),
                      ),
                    ),
