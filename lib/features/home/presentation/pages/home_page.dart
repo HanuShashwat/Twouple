@@ -272,6 +272,19 @@ class _DashboardViewState extends State<_DashboardView> {
         opaque: false,
         barrierDismissible: true,
         barrierColor: Colors.black.withValues(alpha: 0.7), // Dimmed background
+        transitionDuration: const Duration(milliseconds: 750),
+        reverseTransitionDuration: const Duration(milliseconds: 650),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final curvedAnim = CurvedAnimation(
+            parent: animation,
+            curve: Curves.fastEaseInToSlowEaseOut, // Extremely Apple-like heavy inertia curve
+            reverseCurve: Curves.fastOutSlowIn,
+          );
+          return FadeTransition(
+            opacity: curvedAnim,
+            child: child,
+          );
+        },
         pageBuilder: (context, _, __) {
           int currentChartPage = 1; // Default to upcoming week!
           
