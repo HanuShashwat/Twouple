@@ -65,35 +65,67 @@ class _DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<_DashboardView> {
   final TextEditingController _promptController = TextEditingController();
 
-  Widget _buildRing(String label, int percentage, Color color) {
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            SizedBox(
-              height: 60,
-              width: 60,
-              child: CircularProgressIndicator(
-                value: percentage / 100,
-                strokeWidth: 6,
-                backgroundColor: AppColors.surface,
-                valueColor: AlwaysStoppedAnimation<Color>(color),
-                strokeCap: StrokeCap.round,
+  Widget _buildRing(String label, int percentage, Color color, String tooltipText) {
+    return Tooltip(
+      message: tooltipText,
+      triggerMode: TooltipTriggerMode.tap,
+      showDuration: const Duration(seconds: 3),
+      decoration: BoxDecoration(
+        color: AppColors.elevated,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      textStyle: const TextStyle(color: AppColors.textPrimary, fontSize: 12),
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                height: 60,
+                width: 60,
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0.0, end: percentage / 100),
+                  duration: const Duration(milliseconds: 1500),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, _) => CircularProgressIndicator(
+                    value: value,
+                    strokeWidth: 6,
+                    backgroundColor: AppColors.surface,
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                    strokeCap: StrokeCap.round,
+                  ),
+                ),
               ),
-            ),
-            Text('$percentage%', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-      ],
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0, end: percentage.toDouble()),
+                duration: const Duration(milliseconds: 1500),
+                builder: (context, value, _) => Text(
+                  '${value.toInt()}%', 
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              const SizedBox(width: 4),
+              const Icon(Icons.info_outline, size: 12, color: AppColors.textSecondary),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildLineChart() {
     return Container(
-      height: 200,
+      height: 220,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.elevated,
@@ -102,13 +134,49 @@ class _DashboardViewState extends State<_DashboardView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Energy Trend (7 Days)', style: TextStyle(fontWeight: FontWeight.bold)),
+          Row(
+            children: [
+              const Text('Energy Trend (7 Days)', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Spacer(),
+              const Icon(Icons.touch_app_rounded, size: 16, color: AppColors.textSecondary),
+            ],
+          ),
           const SizedBox(height: 16),
           Expanded(
             child: LineChart(
               LineChartData(
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (touchedSpot) => AppColors.surface,
+                    getTooltipItems: (touchedSpots) {
+                      return touchedSpots.map((spot) => LineTooltipItem(
+                        'Energy Score: ${spot.y}\n${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][spot.x.toInt()]}',
+                        const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      )).toList();
+                    },
+                  ),
+                ),
                 gridData: const FlGridData(show: false),
-                titlesData: const FlTitlesData(show: false),
+                titlesData: FlTitlesData(
+                  show: true,
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 22,
+                      interval: 1,
+                      getTitlesWidget: (value, meta) {
+                        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                        if (value % 1 == 0 && value.toInt() >= 0 && value.toInt() < days.length) {
+                           return Text(days[value.toInt()], style: const TextStyle(fontSize: 10, color: AppColors.textSecondary));
+                        }
+                        return const Text('');
+                      },
+                    ),
+                  ),
+                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
@@ -132,6 +200,8 @@ class _DashboardViewState extends State<_DashboardView> {
                   ),
                 ],
               ),
+              duration: const Duration(milliseconds: 1000),
+              curve: Curves.easeOutCubic,
             ),
           ),
         ],
@@ -141,7 +211,7 @@ class _DashboardViewState extends State<_DashboardView> {
 
   Widget _buildBarChart() {
     return Container(
-      height: 200,
+      height: 220,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.elevated,
@@ -150,11 +220,29 @@ class _DashboardViewState extends State<_DashboardView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Elemental Balance', style: TextStyle(fontWeight: FontWeight.bold)),
+          Row(
+            children: [
+              const Text('Elemental Balance', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Spacer(),
+              const Icon(Icons.touch_app_rounded, size: 16, color: AppColors.textSecondary),
+            ],
+          ),
           const SizedBox(height: 16),
           Expanded(
             child: BarChart(
               BarChartData(
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (group) => AppColors.surface,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                       final elements = ['Fire (Action/Passion)', 'Earth (Stability)', 'Air (Intellect)', 'Water (Emotion/Intuition)'];
+                       return BarTooltipItem(
+                         '${elements[group.x.toInt()]}\n${rod.toY.toInt()}%',
+                         const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                       );
+                    }
+                  ),
+                ),
                 alignment: BarChartAlignment.spaceAround,
                 maxY: 100,
                 gridData: const FlGridData(show: false),
@@ -167,10 +255,10 @@ class _DashboardViewState extends State<_DashboardView> {
                       reservedSize: 22,
                       getTitlesWidget: (value, meta) {
                         switch (value.toInt()) {
-                          case 0: return const Text('Fire', style: TextStyle(fontSize: 10));
-                          case 1: return const Text('Earth', style: TextStyle(fontSize: 10));
-                          case 2: return const Text('Air', style: TextStyle(fontSize: 10));
-                          case 3: return const Text('Water', style: TextStyle(fontSize: 10));
+                          case 0: return const Text('Fire', style: TextStyle(fontSize: 10, color: Colors.orangeAccent));
+                          case 1: return const Text('Earth', style: TextStyle(fontSize: 10, color: Colors.greenAccent));
+                          case 2: return const Text('Air', style: TextStyle(fontSize: 10, color: Colors.lightBlueAccent));
+                          case 3: return const Text('Water', style: TextStyle(fontSize: 10, color: Colors.blueAccent));
                           default: return const Text('');
                         }
                       },
@@ -181,12 +269,14 @@ class _DashboardViewState extends State<_DashboardView> {
                   rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
                 barGroups: [
-                  BarChartGroupData(x: 0, barRods: [BarChartRodData(toY: 80, color: Colors.orangeAccent, width: 16, borderRadius: BorderRadius.circular(4))]),
-                  BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 40, color: Colors.greenAccent, width: 16, borderRadius: BorderRadius.circular(4))]),
-                  BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 60, color: Colors.lightBlueAccent, width: 16, borderRadius: BorderRadius.circular(4))]),
-                  BarChartGroupData(x: 3, barRods: [BarChartRodData(toY: 90, color: Colors.blueAccent, width: 16, borderRadius: BorderRadius.circular(4))]),
+                  BarChartGroupData(x: 0, barRods: [BarChartRodData(toY: 80, color: Colors.orangeAccent, width: 20, borderRadius: BorderRadius.circular(6))]),
+                  BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 40, color: Colors.greenAccent, width: 20, borderRadius: BorderRadius.circular(6))]),
+                  BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 60, color: Colors.lightBlueAccent, width: 20, borderRadius: BorderRadius.circular(6))]),
+                  BarChartGroupData(x: 3, barRods: [BarChartRodData(toY: 90, color: Colors.blueAccent, width: 20, borderRadius: BorderRadius.circular(6))]),
                 ],
               ),
+              duration: const Duration(milliseconds: 1000),
+              curve: Curves.easeOutCubic,
             ),
           ),
         ],
@@ -315,9 +405,9 @@ class _DashboardViewState extends State<_DashboardView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildRing('Energy', 78, Colors.amberAccent),
-                  _buildRing('Logic', 92, Colors.lightBlueAccent),
-                  _buildRing('Career', 60, Colors.purpleAccent),
+                  _buildRing('Energy', 78, Colors.amberAccent, 'Your pure life-force and physical drive today based on Sun alignments.'),
+                  _buildRing('Logic', 92, Colors.lightBlueAccent, 'Your rational processing speed dictated by Mercury in the 3rd House.'),
+                  _buildRing('Career', 60, Colors.purpleAccent, 'Material goals and public recognition linked to your Midheaven aspect.'),
                 ],
               ),
               const SizedBox(height: 24),
