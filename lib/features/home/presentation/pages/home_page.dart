@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../../../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../../../features/auth/presentation/bloc/auth_state.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -63,6 +64,135 @@ class _DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<_DashboardView> {
   final TextEditingController _promptController = TextEditingController();
+
+  Widget _buildRing(String label, int percentage, Color color) {
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            SizedBox(
+              height: 60,
+              width: 60,
+              child: CircularProgressIndicator(
+                value: percentage / 100,
+                strokeWidth: 6,
+                backgroundColor: AppColors.surface,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+                strokeCap: StrokeCap.round,
+              ),
+            ),
+            Text('$percentage%', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      ],
+    );
+  }
+
+  Widget _buildLineChart() {
+    return Container(
+      height: 200,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.elevated,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Energy Trend (7 Days)', style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          Expanded(
+            child: LineChart(
+              LineChartData(
+                gridData: const FlGridData(show: false),
+                titlesData: const FlTitlesData(show: false),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: const [
+                      FlSpot(0, 3),
+                      FlSpot(1, 4),
+                      FlSpot(2, 3.5),
+                      FlSpot(3, 5),
+                      FlSpot(4, 4),
+                      FlSpot(5, 6),
+                      FlSpot(6, 5),
+                    ],
+                    isCurved: true,
+                    color: AppColors.primary,
+                    barWidth: 4,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: AppColors.primary.withValues(alpha: 0.2),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBarChart() {
+    return Container(
+      height: 200,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.elevated,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Elemental Balance', style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          Expanded(
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: 100,
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  show: true,
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 22,
+                      getTitlesWidget: (value, meta) {
+                        switch (value.toInt()) {
+                          case 0: return const Text('Fire', style: TextStyle(fontSize: 10));
+                          case 1: return const Text('Earth', style: TextStyle(fontSize: 10));
+                          case 2: return const Text('Air', style: TextStyle(fontSize: 10));
+                          case 3: return const Text('Water', style: TextStyle(fontSize: 10));
+                          default: return const Text('');
+                        }
+                      },
+                    ),
+                  ),
+                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                barGroups: [
+                  BarChartGroupData(x: 0, barRods: [BarChartRodData(toY: 80, color: Colors.orangeAccent, width: 16, borderRadius: BorderRadius.circular(4))]),
+                  BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 40, color: Colors.greenAccent, width: 16, borderRadius: BorderRadius.circular(4))]),
+                  BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 60, color: Colors.lightBlueAccent, width: 16, borderRadius: BorderRadius.circular(4))]),
+                  BarChartGroupData(x: 3, barRods: [BarChartRodData(toY: 90, color: Colors.blueAccent, width: 16, borderRadius: BorderRadius.circular(4))]),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -181,9 +311,26 @@ class _DashboardViewState extends State<_DashboardView> {
                   ],
                 ),
               ),
+              const SizedBox(height: 24),
+
+              // Data Rings Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildRing('Energy', 78, Colors.amberAccent),
+                  _buildRing('Logic', 92, Colors.lightBlueAccent),
+                  _buildRing('Career', 60, Colors.purpleAccent),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Graphs Zone
+              _buildLineChart(),
+              const SizedBox(height: 24),
+              _buildBarChart(),
               const SizedBox(height: 48),
 
-              // Chatbot Master Search Bar
+              // Chatbot Master Search Bar (Relocated to bottom)
               Text(
                 'Ask the Universe',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 22),
@@ -201,7 +348,7 @@ class _DashboardViewState extends State<_DashboardView> {
                 ),
                 child: TextField(
                   controller: _promptController,
-                  maxLines: 8,
+                  maxLines: 4,
                   minLines: 1,
                   style: const TextStyle(color: AppColors.textPrimary),
                   decoration: InputDecoration(

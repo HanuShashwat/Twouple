@@ -5,6 +5,7 @@ import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/auth/presentation/pages/landing_page.dart';
 import '../../features/auth/presentation/pages/onboarding_birth_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
+import '../../features/home/presentation/pages/daily_insight_page.dart';
 import '../../features/home/presentation/pages/mode_selector_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/chatbot/presentation/pages/chatbot_page.dart';
@@ -35,6 +36,10 @@ class AppRouter {
       GoRoute(
         path: '/home',
         builder: (context, state) => const HomePage(),
+      ),
+      GoRoute(
+        path: '/daily-insight',
+        builder: (context, state) => const DailyInsightPage(),
       ),
       GoRoute(
         path: '/mode-selector',
