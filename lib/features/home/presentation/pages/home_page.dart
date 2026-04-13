@@ -170,7 +170,7 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _buildLineChartWidget(List<FlSpot> spots, List<String> daysMap, {int? highlightIndex}) {
+  Widget _buildLineChartWidget(List<FlSpot> spots, List<String> daysMap) {
     return Container(
       padding: const EdgeInsets.only(top: 16),
       child: TweenAnimationBuilder<double>(
@@ -236,12 +236,11 @@ class _DashboardViewState extends State<_DashboardView> {
                   dotData: FlDotData(
                     show: true,
                     getDotPainter: (spot, percent, barData, index) {
-                      final isToday = highlightIndex != null && index == highlightIndex;
                       return FlDotCirclePainter(
-                        radius: (isToday ? 5.0 : 3.0) * (animValue > 0.2 ? animValue : 0),
-                        color: isToday ? AppColors.secondary : AppColors.surface,
+                        radius: 3.0 * (animValue > 0.2 ? animValue : 0),
+                        color: AppColors.surface,
                         strokeWidth: 2,
-                        strokeColor: isToday ? Colors.white : AppColors.primary,
+                        strokeColor: AppColors.primary,
                       );
                     },
                   ),
@@ -268,94 +267,105 @@ class _DashboardViewState extends State<_DashboardView> {
   }
 
   void _openGraphPopup(BuildContext context) {
-    int currentChartPage = 0;
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: true,
+        barrierColor: Colors.black.withValues(alpha: 0.7), // Dimmed background
+        pageBuilder: (context, _, __) {
+          int currentChartPage = 1; // Default to upcoming week!
+          
+          return StatefulBuilder(
+            builder: (context, setState) {
+              final pastSpots = const [
+                FlSpot(0, 5), FlSpot(1, 4.5), FlSpot(2, 3), FlSpot(3, 4), FlSpot(4, 6), FlSpot(5, 5.5), FlSpot(6, 4)
+              ];
+              final futureSpots = const [
+                FlSpot(0, 4), FlSpot(1, 3.5), FlSpot(2, 5), FlSpot(3, 6), FlSpot(4, 5.5), FlSpot(5, 7), FlSpot(6, 6.5)
+              ];
     
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
-          final pastSpots = const [
-            FlSpot(0, 5), FlSpot(1, 4.5), FlSpot(2, 3), FlSpot(3, 4), FlSpot(4, 6), FlSpot(5, 5.5), FlSpot(6, 4)
-          ];
-          final futureSpots = const [
-            FlSpot(0, 4), FlSpot(1, 3.5), FlSpot(2, 5), FlSpot(3, 6), FlSpot(4, 5.5), FlSpot(5, 7), FlSpot(6, 6.5)
-          ];
-
-          return Dialog(
-            backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.all(16),
-            child: Container(
-              height: 400,
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.05),
-                    blurRadius: 32,
-                    spreadRadius: 8,
-                  )
-                ]
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        currentChartPage == 0 ? 'Energy Trend (Previous Week)' : 'Energy Trend (Upcoming Week)', 
-                        style: const TextStyle(fontWeight: FontWeight.bold)
+              return Center(
+                child: Hero(
+                  tag: 'energy_trend_hero',
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      height: 400,
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.05),
+                            blurRadius: 32,
+                            spreadRadius: 8,
+                          )
+                        ]
                       ),
-                      const Spacer(),
-                      const Icon(Icons.swipe_rounded, size: 16, color: AppColors.textSecondary),
-                    ],
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onHorizontalDragEnd: (details) {
-                        if (details.primaryVelocity! > 0 && currentChartPage == 1) {
-                          setState(() => currentChartPage = 0); 
-                        } else if (details.primaryVelocity! < 0 && currentChartPage == 0) {
-                          setState(() => currentChartPage = 1); 
-                        }
-                      },
-                      child: currentChartPage == 0 
-                          ? _buildLineChartWidget(pastSpots, _getDaysMap(true))
-                          : _buildLineChartWidget(futureSpots, _getDaysMap(false), highlightIndex: 0),
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                currentChartPage == 0 ? 'Energy Trend (Previous Week)' : 'Energy Trend (Upcoming Week)', 
+                                style: const TextStyle(fontWeight: FontWeight.bold)
+                              ),
+                              const Spacer(),
+                              const Icon(Icons.swipe_rounded, size: 16, color: AppColors.textSecondary),
+                            ],
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onHorizontalDragEnd: (details) {
+                                if (details.primaryVelocity! > 0 && currentChartPage == 1) {
+                                  setState(() => currentChartPage = 0); 
+                                } else if (details.primaryVelocity! < 0 && currentChartPage == 0) {
+                                  setState(() => currentChartPage = 1); 
+                                }
+                              },
+                              child: currentChartPage == 0 
+                                  ? _buildLineChartWidget(pastSpots, _getDaysMap(true))
+                                  : _buildLineChartWidget(futureSpots, _getDaysMap(false)),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                width: currentChartPage == 0 ? 8 : 6, 
+                                height: 6, 
+                                decoration: BoxDecoration(
+                                  color: currentChartPage == 0 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
+                                  borderRadius: BorderRadius.circular(6)
+                                )
+                              ),
+                              const SizedBox(width: 8),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                width: currentChartPage == 1 ? 8 : 6, 
+                                height: 6, 
+                                decoration: BoxDecoration(
+                                  color: currentChartPage == 1 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
+                                  borderRadius: BorderRadius.circular(6)
+                                )
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        width: currentChartPage == 0 ? 8 : 6, 
-                        height: 6, 
-                        decoration: BoxDecoration(
-                          color: currentChartPage == 0 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
-                          borderRadius: BorderRadius.circular(6)
-                        )
-                      ),
-                      const SizedBox(width: 8),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        width: currentChartPage == 1 ? 8 : 6, 
-                        height: 6, 
-                        decoration: BoxDecoration(
-                          color: currentChartPage == 1 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
-                          borderRadius: BorderRadius.circular(6)
-                        )
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+                ),
+              );
+            }
           );
         }
-      ),
+      )
     );
   }
 
@@ -533,36 +543,49 @@ class _DashboardViewState extends State<_DashboardView> {
                    ),
                    const SizedBox(width: 12),
                    Expanded(
-                     child: GestureDetector(
-                       onTap: () => _openGraphPopup(context),
-                       child: Container(
-                         height: 120,
-                         padding: const EdgeInsets.all(16),
-                         decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(16)),
-                         child: const Column(
-                           crossAxisAlignment: CrossAxisAlignment.start,
-                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                           children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('ENERGY\nTREND', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                                  Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 16),
-                                ]
-                              ),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.baseline,
-                                textBaseline: TextBaseline.alphabetic,
-                                children: [
-                                  Text('8.2', style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 24)),
-                                  SizedBox(width: 8),
-                                  Text('HIGH', style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 10)),
-                                ]
-                              )
-                           ]
+                     child: Hero(
+                       tag: 'energy_trend_hero',
+                       child: Material(
+                         color: Colors.transparent,
+                         child: GestureDetector(
+                           onTap: () => _openGraphPopup(context),
+                           child: Container(
+                             height: 120,
+                             padding: const EdgeInsets.all(16),
+                             decoration: BoxDecoration(
+                               gradient: const LinearGradient(
+                                 colors: [Color(0xFF33200B), AppColors.elevated], // Deep cosmic amber gradient
+                                 begin: Alignment.topLeft,
+                                 end: Alignment.bottomRight,
+                               ),
+                               borderRadius: BorderRadius.circular(16),
+                             ),
+                             child: const Column(
+                               crossAxisAlignment: CrossAxisAlignment.start,
+                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                               children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('ENERGY\nTREND', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                                      Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 16),
+                                    ]
+                                  ),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                                    textBaseline: TextBaseline.alphabetic,
+                                    children: [
+                                      Text('8.2', style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 24)),
+                                      SizedBox(width: 8),
+                                      Text('HIGH', style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 10)),
+                                    ]
+                                  )
+                               ]
+                             ),
+                           ),
                          ),
                        ),
-                     )
+                     ),
                    )
                 ]
               ),
