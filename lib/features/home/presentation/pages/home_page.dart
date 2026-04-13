@@ -264,19 +264,11 @@ class _DashboardViewState extends State<_DashboardView> {
           Row(
             children: [
               Text(
-                _currentChartPage == 0 ? 'Energy Trend (Previous 7 Days)' : 'Energy Trend (Upcoming 7 Days)', 
+                _currentChartPage == 0 ? 'Energy Trend (Previous Week)' : 'Energy Trend (Upcoming Week)', 
                 style: const TextStyle(fontWeight: FontWeight.bold)
               ),
               const Spacer(),
               const Icon(Icons.swipe_rounded, size: 16, color: AppColors.textSecondary),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(width: 8, height: 4, decoration: BoxDecoration(color: _currentChartPage == 0 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(4))),
-              const SizedBox(width: 4),
-              Container(width: 8, height: 4, decoration: BoxDecoration(color: _currentChartPage == 1 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(4))),
             ],
           ),
           Expanded(
@@ -288,6 +280,31 @@ class _DashboardViewState extends State<_DashboardView> {
                 _buildLineChartWidget(futureSpots, _getDaysMap(false)),
               ],
             ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: _currentChartPage == 0 ? 8 : 6, 
+                height: 6, 
+                decoration: BoxDecoration(
+                  color: _currentChartPage == 0 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
+                  borderRadius: BorderRadius.circular(6)
+                )
+              ),
+              const SizedBox(width: 8),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: _currentChartPage == 1 ? 8 : 6, 
+                height: 6, 
+                decoration: BoxDecoration(
+                  color: _currentChartPage == 1 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
+                  borderRadius: BorderRadius.circular(6)
+                )
+              ),
+            ],
           ),
         ],
       ),
