@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-//import '../../constants/app_constants.dart';
 
 class CustomTextField extends StatelessWidget {
   final String label;
@@ -8,6 +7,10 @@ class CustomTextField extends StatelessWidget {
   final TextInputType keyboardType;
   final bool obscureText;
   final Widget? prefixIcon;
+  final Widget? suffixIcon;
+  final bool readOnly;
+  final VoidCallback? onTap;
+  final ValueChanged<String>? onChanged;
 
   const CustomTextField({
     super.key,
@@ -17,6 +20,10 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.prefixIcon,
+    this.suffixIcon,
+    this.readOnly = false,
+    this.onTap,
+    this.onChanged,
   });
 
   @override
@@ -33,9 +40,14 @@ class CustomTextField extends StatelessWidget {
           controller: controller,
           keyboardType: keyboardType,
           obscureText: obscureText,
+          readOnly: readOnly,
+          onTap: onTap,
+          onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: prefixIcon,
+            suffixIcon: suffixIcon,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
         ),
       ],
