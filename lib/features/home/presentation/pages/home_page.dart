@@ -119,17 +119,28 @@ class _DashboardViewState extends State<_DashboardView> {
           Stack(
             alignment: Alignment.center,
             children: [
+              // Outer Drop Shadow Glow (Optional, but adds immense premium feel)
+              Container(
+                height: 85,
+                width: 85,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(color: color.withValues(alpha: 0.1), blurRadius: 16, spreadRadius: 4),
+                  ]
+                ),
+              ),
               SizedBox(
-                height: 60,
-                width: 60,
+                height: 85,
+                width: 85,
                 child: TweenAnimationBuilder<double>(
                   tween: Tween<double>(begin: 0.0, end: percentage / 100),
                   duration: const Duration(milliseconds: 1500),
                   curve: Curves.easeOutCubic,
                   builder: (context, value, _) => CircularProgressIndicator(
                     value: value,
-                    strokeWidth: 6,
-                    backgroundColor: AppColors.surface,
+                    strokeWidth: 8,
+                    backgroundColor: color.withValues(alpha: 0.15), // Tinted background track
                     valueColor: AlwaysStoppedAnimation<Color>(color),
                     strokeCap: StrokeCap.round,
                   ),
@@ -140,18 +151,18 @@ class _DashboardViewState extends State<_DashboardView> {
                 duration: const Duration(milliseconds: 1500),
                 builder: (context, value, _) => Text(
                   '${value.toInt()}%', 
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
+                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 24, color: AppColors.textPrimary)
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2, color: AppColors.textSecondary)),
               const SizedBox(width: 4),
-              const Icon(Icons.info_outline, size: 12, color: AppColors.textSecondary),
+              const Icon(Icons.info_outline, size: 14, color: AppColors.textSecondary),
             ],
           ),
         ],
