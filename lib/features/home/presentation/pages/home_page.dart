@@ -64,6 +64,33 @@ class _DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<_DashboardView> {
   final TextEditingController _promptController = TextEditingController();
+  final PageController _chartPageController = PageController(initialPage: 1);
+  int _currentChartPage = 1;
+
+  @override
+  void dispose() {
+    _promptController.dispose();
+    _chartPageController.dispose();
+    super.dispose();
+  }
+
+  List<String> _getDaysMap(bool isPast) {
+    final now = DateTime.now();
+    List<String> result = [];
+    for (int i = 0; i < 7; i++) {
+      DateTime d = isPast ? now.subtract(Duration(days: 7 - i)) : now.add(Duration(days: i));
+      switch (d.weekday) {
+        case 1: result.add('Mon'); break;
+        case 2: result.add('Tue'); break;
+        case 3: result.add('Wed'); break;
+        case 4: result.add('Thu'); break;
+        case 5: result.add('Fri'); break;
+        case 6: result.add('Sat'); break;
+        case 7: result.add('Sun'); break;
+      }
+    }
+    return result;
+  }
 
   Widget _buildRing(String label, int percentage, Color color, String tooltipText) {
     return Tooltip(
@@ -123,9 +150,73 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _buildLineChart() {
+  Widget _buildLineChartWidget(List<FlSpot> spots, List<String> daysMap) {
     return Container(
-      height: 220,
+      padding: const EdgeInsets.only(top: 16),
+      child: LineChart(
+        LineChartData(
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipColor: (touchedSpot) => AppColors.surface,
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((spot) => LineTooltipItem(
+                  'Energy Score: ${spot.y}\n${daysMap[spot.x.toInt()]}',
+                  const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                )).toList();
+              },
+            ),
+          ),
+          gridData: const FlGridData(show: false),
+          titlesData: FlTitlesData(
+            show: true,
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 22,
+                interval: 1,
+                getTitlesWidget: (value, meta) {
+                  if (value % 1 == 0 && value.toInt() >= 0 && value.toInt() < daysMap.length) {
+                     return Text(daysMap[value.toInt()], style: const TextStyle(fontSize: 10, color: AppColors.textSecondary));
+                  }
+                  return const Text('');
+                },
+              ),
+            ),
+            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          ),
+          borderData: FlBorderData(show: false),
+          lineBarsData: [
+            LineChartBarData(
+              spots: spots,
+              isCurved: true,
+              color: AppColors.primary,
+              barWidth: 4,
+              dotData: const FlDotData(show: false),
+              belowBarData: BarAreaData(
+                show: true,
+                color: AppColors.primary.withValues(alpha: 0.2),
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(milliseconds: 1000),
+        curve: Curves.easeOutCubic,
+      ),
+    );
+  }
+
+  Widget _buildLineChartSection() {
+    final pastSpots = const [
+      FlSpot(0, 5), FlSpot(1, 4.5), FlSpot(2, 3), FlSpot(3, 4), FlSpot(4, 6), FlSpot(5, 5.5), FlSpot(6, 4)
+    ];
+    final futureSpots = const [
+      FlSpot(0, 4), FlSpot(1, 3.5), FlSpot(2, 5), FlSpot(3, 6), FlSpot(4, 5.5), FlSpot(5, 7), FlSpot(6, 6.5)
+    ];
+
+    return Container(
+      height: 250,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.elevated,
@@ -136,72 +227,30 @@ class _DashboardViewState extends State<_DashboardView> {
         children: [
           Row(
             children: [
-              const Text('Energy Trend (7 Days)', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                _currentChartPage == 0 ? 'Energy Trend (Previous 7 Days)' : 'Energy Trend (Upcoming 7 Days)', 
+                style: const TextStyle(fontWeight: FontWeight.bold)
+              ),
               const Spacer(),
-              const Icon(Icons.touch_app_rounded, size: 16, color: AppColors.textSecondary),
+              const Icon(Icons.swipe_rounded, size: 16, color: AppColors.textSecondary),
             ],
           ),
-          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 8, height: 4, decoration: BoxDecoration(color: _currentChartPage == 0 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(4))),
+              const SizedBox(width: 4),
+              Container(width: 8, height: 4, decoration: BoxDecoration(color: _currentChartPage == 1 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(4))),
+            ],
+          ),
           Expanded(
-            child: LineChart(
-              LineChartData(
-                lineTouchData: LineTouchData(
-                  touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (touchedSpot) => AppColors.surface,
-                    getTooltipItems: (touchedSpots) {
-                      return touchedSpots.map((spot) => LineTooltipItem(
-                        'Energy Score: ${spot.y}\n${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][spot.x.toInt()]}',
-                        const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      )).toList();
-                    },
-                  ),
-                ),
-                gridData: const FlGridData(show: false),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 22,
-                      interval: 1,
-                      getTitlesWidget: (value, meta) {
-                        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                        if (value % 1 == 0 && value.toInt() >= 0 && value.toInt() < days.length) {
-                           return Text(days[value.toInt()], style: const TextStyle(fontSize: 10, color: AppColors.textSecondary));
-                        }
-                        return const Text('');
-                      },
-                    ),
-                  ),
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                borderData: FlBorderData(show: false),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: const [
-                      FlSpot(0, 3),
-                      FlSpot(1, 4),
-                      FlSpot(2, 3.5),
-                      FlSpot(3, 5),
-                      FlSpot(4, 4),
-                      FlSpot(5, 6),
-                      FlSpot(6, 5),
-                    ],
-                    isCurved: true,
-                    color: AppColors.primary,
-                    barWidth: 4,
-                    dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: AppColors.primary.withValues(alpha: 0.2),
-                    ),
-                  ),
-                ],
-              ),
-              duration: const Duration(milliseconds: 1000),
-              curve: Curves.easeOutCubic,
+            child: PageView(
+              controller: _chartPageController,
+              onPageChanged: (idx) => setState(() => _currentChartPage = idx),
+              children: [
+                _buildLineChartWidget(pastSpots, _getDaysMap(true)),
+                _buildLineChartWidget(futureSpots, _getDaysMap(false)),
+              ],
             ),
           ),
         ],
@@ -413,7 +462,7 @@ class _DashboardViewState extends State<_DashboardView> {
               const SizedBox(height: 24),
 
               // Graphs Zone
-              _buildLineChart(),
+              _buildLineChartSection(),
               const SizedBox(height: 24),
               _buildBarChart(),
               const SizedBox(height: 48),
