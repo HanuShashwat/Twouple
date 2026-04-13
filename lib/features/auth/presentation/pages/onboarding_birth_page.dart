@@ -5,7 +5,7 @@ import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 
 class OnboardingBirthPage extends StatefulWidget {
-  const OnboardingBirthPage({Key? key}) : super(key: key);
+  const OnboardingBirthPage({super.key});
 
   @override
   State<OnboardingBirthPage> createState() => _OnboardingBirthPageState();

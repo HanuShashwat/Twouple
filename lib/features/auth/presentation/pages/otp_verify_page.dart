@@ -4,7 +4,7 @@ import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 
 class OtpVerifyPage extends StatefulWidget {
-  const OtpVerifyPage({Key? key}) : super(key: key);
+  const OtpVerifyPage({super.key});
 
   @override
   State<OtpVerifyPage> createState() => _OtpVerifyPageState();

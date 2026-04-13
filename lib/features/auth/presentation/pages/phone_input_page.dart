@@ -8,7 +8,7 @@ import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 
 class PhoneInputPage extends StatefulWidget {
-  const PhoneInputPage({Key? key}) : super(key: key);
+  const PhoneInputPage({super.key});
 
   @override
   State<PhoneInputPage> createState() => _PhoneInputPageState();
