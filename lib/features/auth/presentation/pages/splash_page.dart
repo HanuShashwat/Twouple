@@ -20,7 +20,7 @@ class _SplashPageState extends State<SplashPage> {
     // Simulate checking a token
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) {
-      context.go('/phone-input');
+      context.go('/landing');
     }
   }
 

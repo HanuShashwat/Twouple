@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/pages/phone_input_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
+import '../../features/auth/presentation/pages/landing_page.dart';
 import '../../features/auth/presentation/pages/otp_verify_page.dart';
 import '../../features/auth/presentation/pages/onboarding_birth_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
@@ -19,6 +20,10 @@ class AppRouter {
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashPage(),
+      ),
+      GoRoute(
+        path: '/landing',
+        builder: (context, state) => const LandingPage(),
       ),
       GoRoute(
         path: '/phone-input',
