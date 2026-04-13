@@ -3,7 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
+import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -36,6 +39,10 @@ class _OnboardingBirthPageState extends State<OnboardingBirthPage> {
   }
 
   void _submit() async {
+    if (_nameController.text.isNotEmpty) {
+      context.read<AuthBloc>().add(UpdateUserNameEvent(_nameController.text.trim()));
+    }
+    
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 1)); // Simulate save
     setState(() => _isLoading = false);

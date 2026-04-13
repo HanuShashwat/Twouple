@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../../../features/auth/presentation/bloc/auth_state.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
@@ -92,9 +95,17 @@ class _DashboardViewState extends State<_DashboardView> {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        'Demo User',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 24),
+                      BlocBuilder<AuthBloc, AuthState>(
+                        builder: (context, state) {
+                          String username = 'Guest';
+                          if (state is AuthAuthenticated) {
+                            username = state.user.name.split(' ').first; // Extract first name
+                          }
+                          return Text(
+                            username,
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 24),
+                          );
+                        },
                       ),
                     ],
                   ),
