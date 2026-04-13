@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../../../features/auth/presentation/bloc/auth_bloc.dart';
-import '../../../../features/auth/presentation/bloc/auth_state.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
@@ -25,7 +22,9 @@ class _HomePageState extends State<HomePage> {
         index: _currentIndex,
         children: const [
           _DashboardView(),
+          _AIAssistantView(),
           _PartnerSyncView(),
+          _MoreView(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -45,9 +44,19 @@ class _HomePageState extends State<HomePage> {
             label: 'Home',
           ),
           NavigationDestination(
+            icon: Icon(Icons.auto_awesome_outlined, color: AppColors.textSecondary),
+            selectedIcon: Icon(Icons.auto_awesome, color: AppColors.primary),
+            label: 'AI Coach',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.people_outline_rounded, color: AppColors.textSecondary),
             selectedIcon: Icon(Icons.people_rounded, color: AppColors.primary),
-            label: 'Joint Sync',
+            label: 'Sync',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.menu_rounded, color: AppColors.textSecondary),
+            selectedIcon: Icon(Icons.menu_open_rounded, color: AppColors.primary),
+            label: 'More',
           ),
         ],
       ),
@@ -311,195 +320,112 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _buildBarChart() {
-    return Container(
-      height: 220,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.elevated,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Text('Elemental Balance', style: TextStyle(fontWeight: FontWeight.bold)),
-              const Spacer(),
-              const Icon(Icons.touch_app_rounded, size: 16, color: AppColors.textSecondary),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: BarChart(
-              BarChartData(
-                barTouchData: BarTouchData(
-                  touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (group) => AppColors.surface,
-                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                       final elements = ['Fire (Action/Passion)', 'Earth (Stability)', 'Air (Intellect)', 'Water (Emotion/Intuition)'];
-                       return BarTooltipItem(
-                         '${elements[group.x.toInt()]}\n${rod.toY.toInt()}%',
-                         const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
-                       );
-                    }
-                  ),
-                ),
-                alignment: BarChartAlignment.spaceAround,
-                maxY: 100,
-                gridData: const FlGridData(show: false),
-                borderData: FlBorderData(show: false),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 22,
-                      getTitlesWidget: (value, meta) {
-                        switch (value.toInt()) {
-                          case 0: return const Text('Fire', style: TextStyle(fontSize: 10, color: Colors.orangeAccent));
-                          case 1: return const Text('Earth', style: TextStyle(fontSize: 10, color: Colors.greenAccent));
-                          case 2: return const Text('Air', style: TextStyle(fontSize: 10, color: Colors.lightBlueAccent));
-                          case 3: return const Text('Water', style: TextStyle(fontSize: 10, color: Colors.blueAccent));
-                          default: return const Text('');
-                        }
-                      },
-                    ),
-                  ),
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                barGroups: [
-                  BarChartGroupData(x: 0, barRods: [BarChartRodData(toY: 80, color: Colors.orangeAccent, width: 20, borderRadius: BorderRadius.circular(6))]),
-                  BarChartGroupData(x: 1, barRods: [BarChartRodData(toY: 40, color: Colors.greenAccent, width: 20, borderRadius: BorderRadius.circular(6))]),
-                  BarChartGroupData(x: 2, barRods: [BarChartRodData(toY: 60, color: Colors.lightBlueAccent, width: 20, borderRadius: BorderRadius.circular(6))]),
-                  BarChartGroupData(x: 3, barRods: [BarChartRodData(toY: 90, color: Colors.blueAccent, width: 20, borderRadius: BorderRadius.circular(6))]),
-                ],
-              ),
-              duration: const Duration(milliseconds: 1000),
-              curve: Curves.easeOutCubic,
-            ),
-          ),
-        ],
+
+
+  void _openGraphPopup(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        height: MediaQuery.of(context).size.height * 0.55,
+        decoration: const BoxDecoration(
+          color: AppColors.background,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.only(top: 16),
+        child: Column(
+          children: [
+            Container(width: 48, height: 4, decoration: BoxDecoration(color: AppColors.textSecondary.withValues(alpha: 0.3), borderRadius: BorderRadius.circular(4))),
+            Expanded(child: _buildLineChartSection()),
+          ],
+        ),
       ),
     );
+  }
+
+  Widget _buildListTile(String title, String subtitle, IconData icon, Color color) {
+     return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(16)),
+        child: Row(
+          children: [
+             Container(
+               width: 48,
+               height: 48,
+               decoration: BoxDecoration(color: color.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+               child: Icon(icon, color: color),
+             ),
+             const SizedBox(width: 16),
+             Expanded(
+               child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
+                 children: [
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                 ]
+               )
+             )
+          ]
+        )
+     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(0xFF0F1525), // Deeper cosmic blue
-            AppColors.background,
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.center,
-        ),
+        color: AppColors.background, // WHOOP is very dark flat
       ),
       child: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header row
+              // 1. Top Header Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Good evening',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 4),
-                      BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          String username = 'Guest';
-                          if (state is AuthAuthenticated) {
-                            username = state.user.name.split(' ').first; // Extract first name
-                          }
-                          return Text(
-                            username,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 24),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  InkWell(
-                    onTap: () => context.push('/profile'),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.person, color: AppColors.primary),
-                    ),
-                  ),
-                ],
+                   // Profile
+                   Container(
+                     decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.primary.withValues(alpha:0.5))),
+                     child: InkWell(
+                         onTap: () => context.push('/profile'),
+                         borderRadius: BorderRadius.circular(24),
+                         child: const CircleAvatar(radius: 20, backgroundColor: AppColors.elevated, child: Icon(Icons.person, color: AppColors.primary, size: 20))
+                     ),
+                   ),
+                   // Today Nav
+                   Container(
+                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                     decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(24)),
+                     child: const Row(
+                       children: [
+                         Icon(Icons.chevron_left, color: AppColors.textSecondary, size: 20),
+                         SizedBox(width: 8),
+                         Text('TODAY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1.2)),
+                         SizedBox(width: 8),
+                         Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 20),
+                       ]
+                     ),
+                   ),
+                   // Score
+                   const Row(
+                     children: [
+                       Text('85%', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                       SizedBox(width: 4),
+                       Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
+                     ],
+                   )
+                ]
               ),
               const SizedBox(height: 32),
-
-              // Insight Briefing Card
-              Hero(
-                tag: 'insight_card',
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => context.push('/daily-insight'),
-                    borderRadius: BorderRadius.circular(24),
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary.withValues(alpha: 0.15),
-                            AppColors.secondary.withValues(alpha: 0.05),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.auto_awesome, color: AppColors.primary, size: 24),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Today's Insight",
-                                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            "Mercury has entered your 7th house—expect sudden moments of deep clarity. Focus heavily on communication with those you trust today.",
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  height: 1.5,
-                                  fontSize: 15,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+              
+              // Title
+              const Center(
+                child: Text('T W O U P L E', style: TextStyle(letterSpacing: 4, fontWeight: FontWeight.bold, fontSize: 16)),
               ),
               const SizedBox(height: 24),
 
@@ -507,71 +433,130 @@ class _DashboardViewState extends State<_DashboardView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildRing('Energy', 78, Colors.amberAccent, 'Your pure life-force and physical drive today based on Sun alignments.'),
-                  _buildRing('Logic', 92, Colors.lightBlueAccent, 'Your rational processing speed dictated by Mercury in the 3rd House.'),
-                  _buildRing('Career', 60, Colors.purpleAccent, 'Material goals and public recognition linked to your Midheaven aspect.'),
+                  _buildRing('ENERGY', 78, Colors.amberAccent, 'Physical drive based on Sun aspect.'),
+                  _buildRing('LOGIC', 92, Colors.lightBlueAccent, 'Rational speed (Mercury in 3rd House).'),
+                  _buildRing('CAREER', 60, Colors.purpleAccent, 'Material goals (Midheaven aspect).'),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
-              // Graphs Zone
-              _buildLineChartSection(),
-              const SizedBox(height: 24),
-              _buildBarChart(),
-              const SizedBox(height: 48),
-
-              // Chatbot Master Search Bar (Relocated to bottom)
-              Text(
-                'Ask the Universe',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 22),
+              // Twin Monitors (Rectangles)
+              Row(
+                children: [
+                   Expanded(
+                     child: Container(
+                       height: 120,
+                       padding: const EdgeInsets.all(16),
+                       decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(16)),
+                       child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                         children: [
+                            const Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('VIBE\nMONITOR', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                                Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 16),
+                              ]
+                            ),
+                            Row(
+                              children: [
+                                Container(padding: const EdgeInsets.all(4), decoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle), child: const Icon(Icons.check, color: AppColors.background, size: 12)),
+                                const SizedBox(width: 8),
+                                const Text('OPTIMAL\nRANGE', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold, fontSize: 12)),
+                              ]
+                            )
+                         ]
+                       ),
+                     ),
+                   ),
+                   const SizedBox(width: 12),
+                   Expanded(
+                     child: GestureDetector(
+                       onTap: () => _openGraphPopup(context),
+                       child: Container(
+                         height: 120,
+                         padding: const EdgeInsets.all(16),
+                         decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(16)),
+                         child: const Column(
+                           crossAxisAlignment: CrossAxisAlignment.start,
+                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                           children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('ENERGY\nTREND', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                                  Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 16),
+                                ]
+                              ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text('8.2', style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 24)),
+                                  SizedBox(width: 8),
+                                  Text('HIGH', style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 10)),
+                                ]
+                              )
+                           ]
+                         ),
+                       ),
+                     )
+                   )
+                ]
               ),
+              const SizedBox(height: 32),
+
+              // My Day
+              const Text('My Day', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.secondary.withValues(alpha: 0.05),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                    )
-                  ],
-                ),
-                child: TextField(
-                  controller: _promptController,
-                  maxLines: 4,
-                  minLines: 1,
-                  style: const TextStyle(color: AppColors.textPrimary),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: AppColors.elevated,
-                    hintText: "What do the stars say about my career?",
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(32),
-                      borderSide: BorderSide.none,
-                    ),
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: IconButton(
-                        icon: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: const BoxDecoration(
-                            color: AppColors.secondary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.arrow_upward_rounded, color: AppColors.background, size: 20),
-                        ),
-                        onPressed: () {
-                          if (_promptController.text.isNotEmpty) {
-                            context.push('/chatbot');
-                            _promptController.clear();
-                          }
-                        },
+              
+              // Daily Outlook (Hero to Full Insight)
+              Hero(
+                tag: 'insight_card',
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => context.push('/daily-insight'),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.elevated,
+                        borderRadius: BorderRadius.circular(16),
                       ),
+                      child: Row(
+                        children: [
+                           Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primary.withValues(alpha: 0.2)),
+                              child: const Icon(Icons.auto_awesome, color: AppColors.primary, size: 16)
+                           ),
+                           const SizedBox(width: 16),
+                           const Expanded(child: Text('Daily Outlook', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                           const Icon(Icons.chevron_right, color: AppColors.textSecondary)
+                        ]
+                      )
                     ),
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
+
+              // Today's Activities
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("TODAY'S INFLUENCES", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1, color: AppColors.textSecondary)),
+                  Icon(Icons.open_in_full_rounded, size: 14, color: AppColors.textSecondary),
+                ],
+              ),
+              const SizedBox(height: 12),
+              
+              _buildListTile('Positives', 'Financial gains strongly favored.', Icons.trending_up_rounded, Colors.greenAccent),
+              const SizedBox(height: 8),
+              _buildListTile('Precautions', 'Avoid arguments around 5 PM.', Icons.warning_amber_rounded, Colors.redAccent),
+              const SizedBox(height: 48), // Padding bottom
             ],
           ),
         ),
@@ -678,6 +663,95 @@ class _PartnerSyncViewState extends State<_PartnerSyncView> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AIAssistantView extends StatefulWidget {
+  const _AIAssistantView();
+
+  @override
+  State<_AIAssistantView> createState() => _AIAssistantViewState();
+}
+
+class _AIAssistantViewState extends State<_AIAssistantView> {
+  final TextEditingController _promptController = TextEditingController();
+  
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.background,
+      child: SafeArea(
+        child: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(24.0),
+              child: Text(
+                'Twouple AI Assistant',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              ),
+            ),
+            const Expanded(
+              child: Center(
+                child: Text('How can the cosmos guide you today?', style: TextStyle(color: AppColors.textSecondary)),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.elevated,
+                  borderRadius: BorderRadius.circular(32),
+                ),
+                child: TextField(
+                  controller: _promptController,
+                  maxLines: 4,
+                  minLines: 1,
+                  style: const TextStyle(color: AppColors.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: "Ask anything about your charts...",
+                    hintStyle: const TextStyle(color: AppColors.textSecondary),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    border: InputBorder.none,
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: IconButton(
+                        icon: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                          child: const Icon(Icons.arrow_upward_rounded, color: AppColors.background, size: 20),
+                        ),
+                        onPressed: () {
+                           if(_promptController.text.isNotEmpty) {
+                              context.push('/chatbot');
+                              _promptController.clear();
+                           }
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MoreView extends StatelessWidget {
+  const _MoreView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.background,
+      child: const SafeArea(
+        child: Center(
+          child: Text('Settings & More', style: TextStyle(color: AppColors.textSecondary, fontSize: 24)),
         ),
       ),
     );
