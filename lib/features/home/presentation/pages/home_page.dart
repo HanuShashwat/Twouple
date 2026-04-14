@@ -746,52 +746,7 @@ class _DashboardViewState extends State<_DashboardView> {
               const SizedBox(height: 16),
               
               // Daily Outlook (Hero to Full Insight)
-              Hero(
-                tag: 'insight_card',
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => context.push('/daily-insight'),
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.elevated,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                           Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primary.withValues(alpha: 0.2)),
-                              child: const Icon(Icons.auto_awesome, color: AppColors.primary, size: 16)
-                           ),
-                           const SizedBox(width: 16),
-                           Expanded(
-                             child: Column(
-                               crossAxisAlignment: CrossAxisAlignment.start,
-                               mainAxisSize: MainAxisSize.min,
-                               children: [
-                                 const Text('Daily Outlook', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                 const SizedBox(height: 6),
-                                 Text(
-                                   'The moon\'s alignment with Venus today signals a sudden shift in how you process intimacy...',
-                                   style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4, fontStyle: FontStyle.italic),
-                                   maxLines: 2,
-                                   overflow: TextOverflow.ellipsis,
-                                 ),
-                               ]
-                             )
-                           ),
-                           const SizedBox(width: 16),
-                           const Icon(Icons.chevron_right, color: AppColors.textSecondary)
-                        ]
-                      )
-                    ),
-                  ),
-                ),
-              ),
+              const _AnimatedOutlookCard(),
               const SizedBox(height: 24),
 
               // Today's Activities
@@ -809,6 +764,108 @@ class _DashboardViewState extends State<_DashboardView> {
               _buildListTile('Precautions', 'Avoid arguments around 5 PM.', Icons.warning_amber_rounded, Colors.redAccent),
               const SizedBox(height: 48), // Padding bottom
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedOutlookCard extends StatefulWidget {
+  const _AnimatedOutlookCard();
+
+  @override
+  State<_AnimatedOutlookCard> createState() => _AnimatedOutlookCardState();
+}
+
+class _AnimatedOutlookCardState extends State<_AnimatedOutlookCard> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Hero(
+      tag: 'insight_card',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push('/daily-insight'),
+          borderRadius: BorderRadius.circular(16),
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF0F1A2A),
+                      AppColors.primary.withValues(alpha: 0.05 + (_controller.value * 0.15)),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.2 + (_controller.value * 0.4)),
+                    width: 1.0 + (_controller.value * 0.5),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.1 * _controller.value),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle, 
+                        color: AppColors.primary.withValues(alpha: 0.15 + (_controller.value * 0.1)),
+                        boxShadow: [
+                           BoxShadow(color: AppColors.primary.withValues(alpha: 0.3 * _controller.value), blurRadius: 12, spreadRadius: 2)
+                        ]
+                      ),
+                      child: const Icon(Icons.auto_awesome, color: AppColors.primary, size: 20)
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Daily Outlook', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+                          SizedBox(height: 6),
+                          Text(
+                            'The moon\'s alignment with Venus today signals a sudden shift in how you process intimacy...',
+                            style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4, fontStyle: FontStyle.italic),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ]
+                      )
+                    ),
+                    const SizedBox(width: 16),
+                    const Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 20)
+                  ]
+                )
+              );
+            }
           ),
         ),
       ),
