@@ -533,26 +533,42 @@ class _DashboardViewState extends State<_DashboardView> {
                            setState(() => _selectedDate = _selectedDate.add(const Duration(days: 1)));
                         }
                      },
-                     child: Container(
+                     child: AnimatedContainer(
+                       duration: const Duration(milliseconds: 300),
+                       curve: Curves.easeInOutCubic,
                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                        decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(24)),
-                       child: Row(
-                         children: [
-                           GestureDetector(
-                             onTap: () => setState(() => _selectedDate = _selectedDate.subtract(const Duration(days: 1))),
-                             child: const Icon(Icons.chevron_left, color: AppColors.textSecondary, size: 20)
-                           ),
-                           const SizedBox(width: 8),
-                           AnimatedSwitcher(
-                             duration: const Duration(milliseconds: 300),
-                             child: Text(_getDateText(), key: ValueKey(_selectedDate), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1.2)),
-                           ),
-                           const SizedBox(width: 8),
-                           GestureDetector(
-                             onTap: () => setState(() => _selectedDate = _selectedDate.add(const Duration(days: 1))),
-                             child: const Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 20)
-                           ),
-                         ]
+                       child: AnimatedSize(
+                         duration: const Duration(milliseconds: 300),
+                         curve: Curves.easeInOutCubic,
+                         alignment: Alignment.center,
+                         child: Row(
+                           children: [
+                             GestureDetector(
+                               onTap: () => setState(() => _selectedDate = _selectedDate.subtract(const Duration(days: 1))),
+                               child: const Icon(Icons.chevron_left, color: AppColors.textSecondary, size: 20)
+                             ),
+                             const SizedBox(width: 8),
+                             AnimatedSwitcher(
+                               duration: const Duration(milliseconds: 300),
+                               layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
+                                 return Stack(
+                                   alignment: Alignment.center,
+                                   children: <Widget>[
+                                     ...previousChildren,
+                                     if (currentChild != null) currentChild,
+                                   ],
+                                 );
+                               },
+                               child: Text(_getDateText(), key: ValueKey(_selectedDate), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1.2)),
+                             ),
+                             const SizedBox(width: 8),
+                             GestureDetector(
+                               onTap: () => setState(() => _selectedDate = _selectedDate.add(const Duration(days: 1))),
+                               child: const Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 20)
+                             ),
+                           ]
+                         ),
                        ),
                      ),
                    ),
