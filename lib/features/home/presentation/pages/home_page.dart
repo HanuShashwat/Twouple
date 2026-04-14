@@ -811,12 +811,14 @@ class _AnimatedOutlookCardState extends State<_AnimatedOutlookCard> with SingleT
                   gradient: LinearGradient(
                     colors: [
                       const Color(0xFF0F1A2A),
-                      AppColors.primary.withValues(alpha: 0.08),
+                      AppColors.primary.withValues(alpha: 0.12),
                       const Color(0xFF0F1A2A),
                     ],
                     stops: const [0.0, 0.5, 1.0],
-                    begin: Alignment(-2.0 + (_controller.value * 4), 0.0),
-                    end: Alignment(-1.0 + (_controller.value * 4), 0.0),
+                    // A very wide distance (4 units) so the gradient is extremely gentle
+                    // It moves from left to right as the controller goes 0->1
+                    begin: Alignment(-4.0 + (_controller.value * 6), 0.0),
+                    end: Alignment(0.0 + (_controller.value * 6), 0.0),
                   ),
                   border: Border.all(
                     color: AppColors.primary.withValues(alpha: 0.2),
