@@ -402,8 +402,41 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
+  Widget _buildSyncBar(String label, int value, Color color, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 8),
+            Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            const Spacer(),
+            Text('$value%', style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0, end: value / 100),
+            duration: const Duration(milliseconds: 1000),
+            curve: Curves.easeOutCubic,
+            builder: (context, val, _) {
+              return LinearProgressIndicator(
+                value: val,
+                minHeight: 8,
+                backgroundColor: color.withValues(alpha: 0.15),
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              );
+            }
+          ),
+        ),
+      ],
+    );
+  }
+
   void _openSyncPopup(BuildContext context) {
-    int syncScore = _getRingValue("sync", _selectedDate);
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -417,23 +450,22 @@ class _DashboardViewState extends State<_DashboardView> {
             children: [
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8), 
-                    decoration: BoxDecoration(color: AppColors.secondary.withValues(alpha: 0.2), shape: BoxShape.circle), 
-                    child: const Icon(Icons.people_rounded, color: AppColors.secondary, size: 20)
-                  ),
-                  const SizedBox(width: 16),
-                  const Expanded(child: Text('Partner Sync', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.textPrimary))),
+                   Container(
+                     padding: const EdgeInsets.all(8), 
+                     decoration: BoxDecoration(color: Colors.pinkAccent.withValues(alpha: 0.2), shape: BoxShape.circle), 
+                     child: const Icon(Icons.favorite_rounded, color: Colors.pinkAccent, size: 20)
+                   ),
+                   const SizedBox(width: 16),
+                   const Expanded(child: Text('Cosmic Alignment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.textPrimary))),
                 ]
               ),
-              const SizedBox(height: 16),
-              Text(
-                syncScore > 65 
-                  ? 'Your Mercury and Venus aspects are strongly aligned with your partner today. This creates an excellent baseline for deep communication, mutual understanding, and shared intimacy. Make time to connect.'
-                  : 'The cosmic weather indicates some friction in your communication houses today. Practice patience, listen actively, and avoid making major joint decisions until the aspects clear.',
-                style: const TextStyle(color: AppColors.textSecondary, height: 1.5, fontSize: 14),
-              ),
               const SizedBox(height: 24),
+              _buildSyncBar('Communication', _getRingValue("comm", _selectedDate), Colors.lightBlueAccent, Icons.chat_bubble_outline),
+              const SizedBox(height: 16),
+              _buildSyncBar('Intimacy', _getRingValue("intimacy", _selectedDate), Colors.pinkAccent, Icons.favorite_border),
+              const SizedBox(height: 16),
+              _buildSyncBar('Patience', _getRingValue("patience", _selectedDate), Colors.greenAccent, Icons.self_improvement),
+               const SizedBox(height: 24),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
@@ -626,7 +658,14 @@ class _DashboardViewState extends State<_DashboardView> {
                        child: Container(
                          height: 120,
                          padding: const EdgeInsets.all(16),
-                         decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(16)),
+                         decoration: BoxDecoration(
+                           gradient: const LinearGradient(
+                             colors: [Color(0xFF2A1033), AppColors.elevated], // Deep cosmic violet gradient
+                             begin: Alignment.topLeft,
+                             end: Alignment.bottomRight,
+                           ),
+                           borderRadius: BorderRadius.circular(16),
+                         ),
                          child: Column(
                            crossAxisAlignment: CrossAxisAlignment.start,
                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -642,9 +681,9 @@ class _DashboardViewState extends State<_DashboardView> {
                                 crossAxisAlignment: CrossAxisAlignment.baseline,
                                 textBaseline: TextBaseline.alphabetic,
                                 children: [
-                                  Text('${_getRingValue("sync", _selectedDate)}%', style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold, fontSize: 24)),
+                                  Text('${_getRingValue("sync", _selectedDate)}%', style: const TextStyle(color: Colors.pinkAccent, fontWeight: FontWeight.bold, fontSize: 24)),
                                   const SizedBox(width: 8),
-                                  Text(_getRingValue("sync", _selectedDate) > 65 ? 'STRONG' : 'FAIR', style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold, fontSize: 10)),
+                                  Text(_getRingValue("sync", _selectedDate) > 65 ? 'STRONG' : 'FAIR', style: const TextStyle(color: Colors.pinkAccent, fontWeight: FontWeight.bold, fontSize: 10)),
                                 ]
                               )
                            ]
