@@ -784,7 +784,7 @@ class _AnimatedOutlookCardState extends State<_AnimatedOutlookCard> with SingleT
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat();
   }
 
   @override
@@ -811,18 +811,20 @@ class _AnimatedOutlookCardState extends State<_AnimatedOutlookCard> with SingleT
                   gradient: LinearGradient(
                     colors: [
                       const Color(0xFF0F1A2A),
-                      AppColors.primary.withValues(alpha: 0.05 + (_controller.value * 0.15)),
+                      AppColors.primary.withValues(alpha: 0.08),
+                      const Color(0xFF0F1A2A),
                     ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                    stops: const [0.0, 0.5, 1.0],
+                    begin: Alignment(-2.0 + (_controller.value * 4), 0.0),
+                    end: Alignment(-1.0 + (_controller.value * 4), 0.0),
                   ),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.2 + (_controller.value * 0.4)),
+                    color: AppColors.primary.withValues(alpha: 0.2),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.1 * _controller.value),
+                      color: AppColors.primary.withValues(alpha: 0.05),
                       blurRadius: 16,
                       spreadRadius: 2,
                     ),
@@ -836,9 +838,9 @@ class _AnimatedOutlookCardState extends State<_AnimatedOutlookCard> with SingleT
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle, 
-                        color: AppColors.primary.withValues(alpha: 0.15 + (_controller.value * 0.1)),
+                        color: AppColors.primary.withValues(alpha: 0.2),
                         boxShadow: [
-                           BoxShadow(color: AppColors.primary.withValues(alpha: 0.3 * _controller.value), blurRadius: 12, spreadRadius: 2)
+                           BoxShadow(color: AppColors.primary.withValues(alpha: 0.1), blurRadius: 10, spreadRadius: 1)
                         ]
                       ),
                       child: const Icon(Icons.auto_awesome, color: AppColors.primary, size: 20)
