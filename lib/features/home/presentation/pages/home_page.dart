@@ -402,7 +402,8 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  void _openVibePopup(BuildContext context) {
+  void _openSyncPopup(BuildContext context) {
+    int syncScore = _getRingValue("sync", _selectedDate);
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -418,17 +419,19 @@ class _DashboardViewState extends State<_DashboardView> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8), 
-                    decoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle), 
-                    child: const Icon(Icons.check, color: AppColors.background, size: 20)
+                    decoration: BoxDecoration(color: AppColors.secondary.withValues(alpha: 0.2), shape: BoxShape.circle), 
+                    child: const Icon(Icons.people_rounded, color: AppColors.secondary, size: 20)
                   ),
                   const SizedBox(width: 16),
-                  const Expanded(child: Text('Vibe Analysis', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.textPrimary))),
+                  const Expanded(child: Text('Partner Sync', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.textPrimary))),
                 ]
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Your overall frequency is currently operating in an Optimal Range. The cosmic alignment today provides an excellent baseline for stable emotions and grounded decisions.',
-                style: TextStyle(color: AppColors.textSecondary, height: 1.5, fontSize: 14),
+              Text(
+                syncScore > 65 
+                  ? 'Your Mercury and Venus aspects are strongly aligned with your partner today. This creates an excellent baseline for deep communication, mutual understanding, and shared intimacy. Make time to connect.'
+                  : 'The cosmic weather indicates some friction in your communication houses today. Practice patience, listen actively, and avoid making major joint decisions until the aspects clear.',
+                style: const TextStyle(color: AppColors.textSecondary, height: 1.5, fontSize: 14),
               ),
               const SizedBox(height: 24),
               Align(
@@ -619,7 +622,7 @@ class _DashboardViewState extends State<_DashboardView> {
                 children: [
                    Expanded(
                      child: GestureDetector(
-                       onTap: () => _openVibePopup(context),
+                       onTap: () => _openSyncPopup(context),
                        child: Container(
                          height: 120,
                          padding: const EdgeInsets.all(16),
@@ -631,15 +634,17 @@ class _DashboardViewState extends State<_DashboardView> {
                               const Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text('VIBE\nMONITOR', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                                  Text('PARTNER\nSYNC', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
                                   Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 16),
                                 ]
                               ),
                               Row(
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
                                 children: [
-                                  Container(padding: const EdgeInsets.all(4), decoration: const BoxDecoration(color: AppColors.secondary, shape: BoxShape.circle), child: const Icon(Icons.check, color: AppColors.background, size: 12)),
+                                  Text('${_getRingValue("sync", _selectedDate)}%', style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold, fontSize: 24)),
                                   const SizedBox(width: 8),
-                                  const Text('OPTIMAL\nRANGE', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold, fontSize: 12)),
+                                  Text(_getRingValue("sync", _selectedDate) > 65 ? 'STRONG' : 'FAIR', style: const TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold, fontSize: 10)),
                                 ]
                               )
                            ]
