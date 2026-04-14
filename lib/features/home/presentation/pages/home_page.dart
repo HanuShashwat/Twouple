@@ -760,6 +760,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                            Container(
                               padding: const EdgeInsets.all(8),
@@ -767,7 +768,23 @@ class _DashboardViewState extends State<_DashboardView> {
                               child: const Icon(Icons.auto_awesome, color: AppColors.primary, size: 16)
                            ),
                            const SizedBox(width: 16),
-                           const Expanded(child: Text('Daily Outlook', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                           Expanded(
+                             child: Column(
+                               crossAxisAlignment: CrossAxisAlignment.start,
+                               mainAxisSize: MainAxisSize.min,
+                               children: [
+                                 const Text('Daily Outlook', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                 const SizedBox(height: 6),
+                                 Text(
+                                   'The moon\'s alignment with Venus today signals a sudden shift in how you process intimacy...',
+                                   style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4, fontStyle: FontStyle.italic),
+                                   maxLines: 2,
+                                   overflow: TextOverflow.ellipsis,
+                                 ),
+                               ]
+                             )
+                           ),
+                           const SizedBox(width: 16),
                            const Icon(Icons.chevron_right, color: AppColors.textSecondary)
                         ]
                       )
