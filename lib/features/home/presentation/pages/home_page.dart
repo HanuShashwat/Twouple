@@ -74,6 +74,7 @@ class _DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<_DashboardView> {
   final TextEditingController _promptController = TextEditingController();
   final PageController _chartPageController = PageController(initialPage: 1);
+  DateTime _selectedDate = DateTime.now();
 
 
   @override
@@ -81,6 +82,25 @@ class _DashboardViewState extends State<_DashboardView> {
     _promptController.dispose();
     _chartPageController.dispose();
     super.dispose();
+  }
+
+  String _getDateText() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final selected = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+    final difference = selected.difference(today).inDays;
+    
+    if (difference == 0) return 'TODAY';
+    if (difference == -1) return 'YESTERDAY';
+    if (difference == 1) return 'TOMORROW';
+    
+    final months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    return '${selected.day} ${months[selected.month - 1]}';
+  }
+
+  int _getRingValue(String type, DateTime date) {
+    int hash = date.day + date.month * 31 + date.year + type.hashCode;
+    return (hash % 60) + 40;
   }
 
   List<String> _getDaysMap(bool isPast) {
@@ -479,25 +499,72 @@ class _DashboardViewState extends State<_DashboardView> {
                      ),
                    ),
                    // Today Nav
-                   Container(
-                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                     decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(24)),
-                     child: const Row(
-                       children: [
-                         Icon(Icons.chevron_left, color: AppColors.textSecondary, size: 20),
-                         SizedBox(width: 8),
-                         Text('TODAY', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1.2)),
-                         SizedBox(width: 8),
-                         Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 20),
-                       ]
+                   GestureDetector(
+                     onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: _selectedDate,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2101),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: const ColorScheme.dark(
+                                  primary: AppColors.primary,
+                                  onPrimary: Colors.white,
+                                  surface: AppColors.elevated,
+                                  onSurface: AppColors.textPrimary,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null && picked != _selectedDate) {
+                          setState(() {
+                            _selectedDate = picked;
+                          });
+                        }
+                     },
+                     onHorizontalDragEnd: (details) {
+                        if (details.primaryVelocity! > 0) {
+                           setState(() => _selectedDate = _selectedDate.subtract(const Duration(days: 1)));
+                        } else if (details.primaryVelocity! < 0) {
+                           setState(() => _selectedDate = _selectedDate.add(const Duration(days: 1)));
+                        }
+                     },
+                     child: Container(
+                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                       decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(24)),
+                       child: Row(
+                         children: [
+                           GestureDetector(
+                             onTap: () => setState(() => _selectedDate = _selectedDate.subtract(const Duration(days: 1))),
+                             child: const Icon(Icons.chevron_left, color: AppColors.textSecondary, size: 20)
+                           ),
+                           const SizedBox(width: 8),
+                           AnimatedSwitcher(
+                             duration: const Duration(milliseconds: 300),
+                             child: Text(_getDateText(), key: ValueKey(_selectedDate), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1.2)),
+                           ),
+                           const SizedBox(width: 8),
+                           GestureDetector(
+                             onTap: () => setState(() => _selectedDate = _selectedDate.add(const Duration(days: 1))),
+                             child: const Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 20)
+                           ),
+                         ]
+                       ),
                      ),
                    ),
                    // Score
-                   const Row(
+                   Row(
                      children: [
-                       Text('85%', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                       SizedBox(width: 4),
-                       Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
+                       AnimatedSwitcher(
+                         duration: const Duration(milliseconds: 300),
+                         child: Text('${_getRingValue("score", _selectedDate)}%', key: ValueKey(_selectedDate), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                       ),
+                       const SizedBox(width: 4),
+                       const Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
                      ],
                    )
                 ]
@@ -511,13 +578,23 @@ class _DashboardViewState extends State<_DashboardView> {
               const SizedBox(height: 24),
 
               // Data Rings Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildRing('ENERGY', 78, Colors.amberAccent, 'Physical drive based on Sun aspect.'),
-                  _buildRing('LOGIC', 92, Colors.lightBlueAccent, 'Rational speed (Mercury in 3rd House).'),
-                  _buildRing('CAREER', 60, Colors.purpleAccent, 'Material goals (Midheaven aspect).'),
-                ],
+              GestureDetector(
+                onHorizontalDragEnd: (details) {
+                  if (details.primaryVelocity! > 0) {
+                     setState(() => _selectedDate = _selectedDate.subtract(const Duration(days: 1)));
+                  } else if (details.primaryVelocity! < 0) {
+                     setState(() => _selectedDate = _selectedDate.add(const Duration(days: 1)));
+                  }
+                },
+                child: Row(
+                  key: ValueKey(_selectedDate),
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildRing('ENERGY', _getRingValue('energy', _selectedDate), Colors.amberAccent, 'Physical drive based on Sun aspect.'),
+                    _buildRing('LOGIC', _getRingValue('logic', _selectedDate), Colors.lightBlueAccent, 'Rational speed (Mercury in 3rd House).'),
+                    _buildRing('CAREER', _getRingValue('career', _selectedDate), Colors.purpleAccent, 'Material goals (Midheaven aspect).'),
+                  ],
+                ),
               ),
               const SizedBox(height: 32),
 
