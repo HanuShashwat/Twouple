@@ -818,7 +818,7 @@ class _AnimatedOutlookCardState extends State<_AnimatedOutlookCard> with SingleT
                   ),
                   border: Border.all(
                     color: AppColors.primary.withValues(alpha: 0.2 + (_controller.value * 0.4)),
-                    width: 1.0 + (_controller.value * 0.5),
+                    width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -853,7 +853,7 @@ class _AnimatedOutlookCardState extends State<_AnimatedOutlookCard> with SingleT
                           SizedBox(height: 6),
                           Text(
                             'The moon\'s alignment with Venus today signals a sudden shift in how you process intimacy...',
-                            style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4, fontStyle: FontStyle.italic),
+                            style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.4, fontWeight: FontWeight.w500),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
