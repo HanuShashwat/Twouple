@@ -249,7 +249,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   spots: animatedSpots,
                   isCurved: true,
                   gradient: const LinearGradient(
-                    colors: [Colors.amberAccent, AppColors.primary],
+                    colors: [Colors.orange, AppColors.primary],
                   ),
                   barWidth: 4,
                   isStrokeCapRound: true,
@@ -452,19 +452,19 @@ class _DashboardViewState extends State<_DashboardView> {
                 children: [
                    Container(
                      padding: const EdgeInsets.all(8), 
-                     decoration: BoxDecoration(color: Colors.pinkAccent.withValues(alpha: 0.2), shape: BoxShape.circle), 
-                     child: const Icon(Icons.favorite_rounded, color: Colors.pinkAccent, size: 20)
+                     decoration: BoxDecoration(color: Colors.pink.withValues(alpha: 0.2), shape: BoxShape.circle), 
+                     child: const Icon(Icons.favorite_rounded, color: Colors.pink, size: 20)
                    ),
                    const SizedBox(width: 16),
                    const Expanded(child: Text('Cosmic Alignment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.textPrimary))),
                 ]
               ),
               const SizedBox(height: 24),
-              _buildSyncBar('Communication', _getRingValue("comm", _selectedDate), Colors.lightBlueAccent, Icons.chat_bubble_outline),
+              _buildSyncBar('Communication', _getRingValue("comm", _selectedDate), Colors.lightBlue, Icons.chat_bubble_outline),
               const SizedBox(height: 16),
-              _buildSyncBar('Intimacy', _getRingValue("intimacy", _selectedDate), Colors.pinkAccent, Icons.favorite_border),
+              _buildSyncBar('Intimacy', _getRingValue("intimacy", _selectedDate), Colors.pink, Icons.favorite_border),
               const SizedBox(height: 16),
-              _buildSyncBar('Patience', _getRingValue("patience", _selectedDate), Colors.greenAccent, Icons.self_improvement),
+              _buildSyncBar('Patience', _getRingValue("patience", _selectedDate), Colors.green, Icons.self_improvement),
                const SizedBox(height: 24),
               Align(
                 alignment: Alignment.centerRight,
@@ -544,10 +544,10 @@ class _DashboardViewState extends State<_DashboardView> {
                           builder: (context, child) {
                             return Theme(
                               data: Theme.of(context).copyWith(
-                                colorScheme: const ColorScheme.dark(
+                                colorScheme: const ColorScheme.light(
                                   primary: AppColors.primary,
-                                  onPrimary: Colors.white,
-                                  surface: AppColors.elevated,
+                                  onPrimary: AppColors.background,
+                                  surface: AppColors.surface,
                                   onSurface: AppColors.textPrimary,
                                 ),
                               ),
@@ -641,9 +641,9 @@ class _DashboardViewState extends State<_DashboardView> {
                   key: ValueKey(_selectedDate),
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildRing('ENERGY', _getRingValue('energy', _selectedDate), Colors.amberAccent, 'Physical drive based on Sun aspect.'),
-                    _buildRing('LOGIC', _getRingValue('logic', _selectedDate), Colors.lightBlueAccent, 'Rational speed (Mercury in 3rd House).'),
-                    _buildRing('CAREER', _getRingValue('career', _selectedDate), Colors.purpleAccent, 'Material goals (Midheaven aspect).'),
+                    _buildRing('ENERGY', _getRingValue('energy', _selectedDate), Colors.orange, 'Physical drive based on Sun aspect.'),
+                    _buildRing('LOGIC', _getRingValue('logic', _selectedDate), Colors.lightBlue, 'Rational speed (Mercury in 3rd House).'),
+                    _buildRing('CAREER', _getRingValue('career', _selectedDate), Colors.purple, 'Material goals (Midheaven aspect).'),
                   ],
                 ),
               ),
@@ -660,11 +660,12 @@ class _DashboardViewState extends State<_DashboardView> {
                          padding: const EdgeInsets.all(16),
                          decoration: BoxDecoration(
                            gradient: const LinearGradient(
-                             colors: [Color(0xFF2A1033), AppColors.elevated], // Deep cosmic violet gradient
+                             colors: [AppColors.surface, AppColors.elevated],
                              begin: Alignment.topLeft,
                              end: Alignment.bottomRight,
                            ),
                            borderRadius: BorderRadius.circular(16),
+                           border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
                          ),
                          child: Column(
                            crossAxisAlignment: CrossAxisAlignment.start,
@@ -681,9 +682,9 @@ class _DashboardViewState extends State<_DashboardView> {
                                 crossAxisAlignment: CrossAxisAlignment.baseline,
                                 textBaseline: TextBaseline.alphabetic,
                                 children: [
-                                  Text('${_getRingValue("sync", _selectedDate)}%', style: const TextStyle(color: Colors.pinkAccent, fontWeight: FontWeight.bold, fontSize: 24)),
+                                  Text('${_getRingValue("sync", _selectedDate)}%', style: const TextStyle(color: Colors.pink, fontWeight: FontWeight.bold, fontSize: 24)),
                                   const SizedBox(width: 8),
-                                  Text(_getRingValue("sync", _selectedDate) > 65 ? 'STRONG' : 'FAIR', style: const TextStyle(color: Colors.pinkAccent, fontWeight: FontWeight.bold, fontSize: 10)),
+                                  Text(_getRingValue("sync", _selectedDate) > 65 ? 'STRONG' : 'FAIR', style: const TextStyle(color: Colors.pink, fontWeight: FontWeight.bold, fontSize: 10)),
                                 ]
                               )
                            ]
@@ -704,11 +705,12 @@ class _DashboardViewState extends State<_DashboardView> {
                              padding: const EdgeInsets.all(16),
                              decoration: BoxDecoration(
                                gradient: const LinearGradient(
-                                 colors: [Color(0xFF33200B), AppColors.elevated], // Deep cosmic amber gradient
+                                 colors: [AppColors.surface, AppColors.elevated],
                                  begin: Alignment.topLeft,
                                  end: Alignment.bottomRight,
                                ),
                                borderRadius: BorderRadius.circular(16),
+                               border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
                              ),
                              child: const Column(
                                crossAxisAlignment: CrossAxisAlignment.start,
@@ -725,9 +727,9 @@ class _DashboardViewState extends State<_DashboardView> {
                                     crossAxisAlignment: CrossAxisAlignment.baseline,
                                     textBaseline: TextBaseline.alphabetic,
                                     children: [
-                                      Text('8.2', style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 24)),
+                                      Text('8.2', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 24)),
                                       SizedBox(width: 8),
-                                      Text('HIGH', style: TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 10)),
+                                      Text('HIGH', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 10)),
                                     ]
                                   )
                                ]
@@ -759,9 +761,9 @@ class _DashboardViewState extends State<_DashboardView> {
               ),
               const SizedBox(height: 12),
               
-              _buildListTile('Positives', 'Financial gains strongly favored.', Icons.trending_up_rounded, Colors.greenAccent),
+              _buildListTile('Positives', 'Financial gains strongly favored.', Icons.trending_up_rounded, Colors.green),
               const SizedBox(height: 8),
-              _buildListTile('Precautions', 'Avoid arguments around 5 PM.', Icons.warning_amber_rounded, Colors.redAccent),
+              _buildListTile('Precautions', 'Avoid arguments around 5 PM.', Icons.warning_amber_rounded, Colors.red),
               const SizedBox(height: 48), // Padding bottom
             ],
           ),
@@ -810,9 +812,9 @@ class _AnimatedOutlookCardState extends State<_AnimatedOutlookCard> with SingleT
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xFF0F1A2A),
-                      AppColors.primary.withValues(alpha: 0.12),
-                      const Color(0xFF0F1A2A),
+                      AppColors.surface,
+                      AppColors.primary.withValues(alpha: 0.08),
+                      AppColors.surface,
                     ],
                     stops: const [0.0, 0.5, 1.0],
                     // A very wide distance (4 units) so the gradient is extremely gentle
@@ -853,11 +855,11 @@ class _AnimatedOutlookCardState extends State<_AnimatedOutlookCard> with SingleT
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('Daily Outlook', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+                          Text('Daily Outlook', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
                           SizedBox(height: 6),
                           Text(
                             'The moon\'s alignment with Venus today signals a sudden shift in how you process intimacy...',
-                            style: TextStyle(color: Colors.white70, fontSize: 14, height: 1.4, fontWeight: FontWeight.w500),
+                            style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.4, fontWeight: FontWeight.w500),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -913,7 +915,7 @@ class _PartnerSyncViewState extends State<_PartnerSyncView> {
         gradient: LinearGradient(
           colors: [
             AppColors.background,
-            Color(0xFF101320),
+            AppColors.surface,
           ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
