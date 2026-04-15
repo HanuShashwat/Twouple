@@ -684,7 +684,7 @@ class _DashboardViewState extends State<_DashboardView> {
                                 children: [
                                   Text('${_getRingValue("sync", _selectedDate)}%', style: const TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.bold, fontSize: 24)),
                                   const SizedBox(width: 8),
-                                  Text(_getRingValue("sync", _selectedDate) > 65 ? 'STRONG' : 'FAIR', style: const TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.bold, fontSize: 10)),
+                                  Text(_getRingValue("sync", _selectedDate) > 65 ? 'STRONG' : 'FAIR', style: const TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.w900, fontSize: 12)),
                                 ]
                               )
                            ]
@@ -727,9 +727,9 @@ class _DashboardViewState extends State<_DashboardView> {
                                     crossAxisAlignment: CrossAxisAlignment.baseline,
                                     textBaseline: TextBaseline.alphabetic,
                                     children: [
-                                      Text('8.2', style: const TextStyle(color: Color(0xFFE7AD5D), fontWeight: FontWeight.bold, fontSize: 24)),
+                                      Text('8.2', style: const TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.bold, fontSize: 24)),
                                       const SizedBox(width: 8),
-                                      const Text('HIGH', style: TextStyle(color: Color(0xFFE7AD5D), fontWeight: FontWeight.bold, fontSize: 10)),
+                                      const Text('HIGH', style: TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.w900, fontSize: 12)),
                                     ]
                                   )
                                ]
