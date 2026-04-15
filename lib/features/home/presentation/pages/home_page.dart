@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
+import '../../../../core/widgets/celestial_background.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,6 +19,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: IndexedStack(
         index: _currentIndex,
         children: const [
@@ -510,9 +512,10 @@ class _DashboardViewState extends State<_DashboardView> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return CelestialBackground(
+      child: Container(
       decoration: const BoxDecoration(
-        color: AppColors.background, // WHOOP is very dark flat
+        color: Colors.transparent,
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -768,6 +771,7 @@ class _DashboardViewState extends State<_DashboardView> {
             ],
           ),
         ),
+      ),
       ),
     );
   }
