@@ -166,23 +166,23 @@ class _DashboardViewState extends State<_DashboardView> {
                   ),
                 ),
               ),
-              TweenAnimationBuilder<double>(
-                tween: Tween<double>(begin: 0, end: percentage.toDouble()),
-                duration: const Duration(milliseconds: 1500),
-                builder: (context, value, _) => Text(
-                  '${value.toInt()}%', 
-                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 24, color: AppColors.textPrimary)
-                ),
-              ),
+               TweenAnimationBuilder<double>(
+                 tween: Tween<double>(begin: 0, end: percentage.toDouble()),
+                 duration: const Duration(milliseconds: 1500),
+                 builder: (context, value, _) => Text(
+                   '${value.toInt()}%', 
+                   style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 22, color: AppColors.textPrimary)
+                 ),
+               ),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.2, color: AppColors.textSecondary)),
+              Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.4, color: AppColors.textPrimary)),
               const SizedBox(width: 4),
-              const Icon(Icons.info_outline, size: 14, color: AppColors.textSecondary),
+              const Icon(Icons.info_outline, size: 13, color: AppColors.textSecondary),
             ],
           ),
         ],
@@ -497,9 +497,9 @@ class _DashboardViewState extends State<_DashboardView> {
                child: Column(
                  crossAxisAlignment: CrossAxisAlignment.start,
                  children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    const SizedBox(height: 4),
-                    Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                     Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.textPrimary)),
+                     const SizedBox(height: 4),
+                     Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
                  ]
                )
              )
@@ -671,12 +671,12 @@ class _DashboardViewState extends State<_DashboardView> {
                            crossAxisAlignment: CrossAxisAlignment.start,
                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                            children: [
-                              const Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('PARTNER\nSYNC', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                                  Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 16),
-                                ]
+                               const Row(
+                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                 children: [
+                                   Text('PARTNER\nSYNC', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.2, color: AppColors.textPrimary)),
+                                   Icon(Icons.chevron_right, color: AppColors.textPrimary, size: 16),
+                                 ]
                               ),
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -716,12 +716,12 @@ class _DashboardViewState extends State<_DashboardView> {
                                crossAxisAlignment: CrossAxisAlignment.start,
                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('ENERGY\nTREND', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                                      Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 16),
-                                    ]
+                                   Row(
+                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                     children: [
+                                       Text('ENERGY\nTREND', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.2, color: AppColors.textPrimary)),
+                                       Icon(Icons.chevron_right, color: AppColors.textPrimary, size: 16),
+                                     ]
                                   ),
                                   Row(
                                     crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -744,7 +744,7 @@ class _DashboardViewState extends State<_DashboardView> {
               const SizedBox(height: 32),
 
               // My Day
-              const Text('My Day', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text('My Day', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.textPrimary, letterSpacing: 0.3)),
               const SizedBox(height: 16),
               
               // Daily Outlook (Hero to Full Insight)
@@ -755,8 +755,8 @@ class _DashboardViewState extends State<_DashboardView> {
               const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("TODAY'S INFLUENCES", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1, color: AppColors.textSecondary)),
-                  Icon(Icons.open_in_full_rounded, size: 14, color: AppColors.textSecondary),
+                  Text("TODAY'S INFLUENCES", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.2, color: AppColors.textPrimary)),
+                  Icon(Icons.open_in_full_rounded, size: 14, color: AppColors.textPrimary),
                 ],
               ),
               const SizedBox(height: 12),
@@ -855,11 +855,11 @@ class _AnimatedOutlookCardState extends State<_AnimatedOutlookCard> with SingleT
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('Daily Outlook', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary)),
+                          Text('Daily Outlook', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: AppColors.textPrimary, letterSpacing: 0.2)),
                           SizedBox(height: 6),
                           Text(
                             'The moon\'s alignment with Venus today signals a sudden shift in how you process intimacy...',
-                            style: TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.4, fontWeight: FontWeight.w500),
+                            style: TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.5, fontWeight: FontWeight.w600),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
