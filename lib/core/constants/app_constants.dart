@@ -8,10 +8,10 @@ class AppColors {
   static const Color primary = Color(0xFF9C4F36);
   static const Color secondary = Color(0xFFE5CCB0);
   static const Color error = Color(0xFFD9534F);
-  
-  static const Color textPrimary = Color(0xFF363457);
-  static const Color textSecondary = Color(0xFF6C6A82);
-  static const Color textMuted = Color(0xFFA6A4BB);
+
+  static const Color textPrimary = Color(0xFF1E1C3A);
+  static const Color textSecondary = Color(0xFF4A4862);
+  static const Color textMuted = Color(0xFF7C7A94);
 }
 
 class AppConstants {

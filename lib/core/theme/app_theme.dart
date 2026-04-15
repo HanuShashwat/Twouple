@@ -18,9 +18,9 @@ class AppTheme {
         displayLarge: GoogleFonts.cinzel(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
         displayMedium: GoogleFonts.cinzel(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
         titleLarge: GoogleFonts.cinzel(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
-        bodyLarge: GoogleFonts.cormorantGaramond(color: AppColors.textPrimary),
-        bodyMedium: GoogleFonts.cormorantGaramond(color: AppColors.textSecondary),
-        labelLarge: GoogleFonts.cormorantGaramond(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        bodyLarge: GoogleFonts.cormorantGaramond(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+        bodyMedium: GoogleFonts.cormorantGaramond(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+        labelLarge: GoogleFonts.cormorantGaramond(color: AppColors.textPrimary, fontWeight: FontWeight.w700),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
