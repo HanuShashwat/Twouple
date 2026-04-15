@@ -14,13 +14,13 @@ class AppTheme {
         error: AppColors.error,
         surface: AppColors.surface,
       ),
-      textTheme: GoogleFonts.jostTextTheme(ThemeData.light().textTheme).copyWith(
-        displayLarge: GoogleFonts.jost(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
-        displayMedium: GoogleFonts.jost(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
-        titleLarge: GoogleFonts.jost(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
-        bodyLarge: GoogleFonts.outfit(color: AppColors.textPrimary),
-        bodyMedium: GoogleFonts.outfit(color: AppColors.textSecondary),
-        labelLarge: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+      textTheme: GoogleFonts.cormorantGaramondTextTheme(ThemeData.light().textTheme).copyWith(
+        displayLarge: GoogleFonts.cinzel(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        displayMedium: GoogleFonts.cinzel(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        titleLarge: GoogleFonts.cinzel(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+        bodyLarge: GoogleFonts.cormorantGaramond(color: AppColors.textPrimary),
+        bodyMedium: GoogleFonts.cormorantGaramond(color: AppColors.textSecondary),
+        labelLarge: GoogleFonts.cormorantGaramond(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -31,7 +31,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(12),
           ),
           padding: const EdgeInsets.symmetric(vertical: 16),
-          textStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
+          textStyle: GoogleFonts.cinzel(fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(

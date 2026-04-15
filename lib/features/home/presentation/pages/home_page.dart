@@ -249,7 +249,7 @@ class _DashboardViewState extends State<_DashboardView> {
                   spots: animatedSpots,
                   isCurved: true,
                   gradient: const LinearGradient(
-                    colors: [Colors.orange, AppColors.primary],
+                    colors: [Color(0xFFE7AD5D), AppColors.primary],
                   ),
                   barWidth: 4,
                   isStrokeCapRound: true,
@@ -452,19 +452,19 @@ class _DashboardViewState extends State<_DashboardView> {
                 children: [
                    Container(
                      padding: const EdgeInsets.all(8), 
-                     decoration: BoxDecoration(color: Colors.pink.withValues(alpha: 0.2), shape: BoxShape.circle), 
-                     child: const Icon(Icons.favorite_rounded, color: Colors.pink, size: 20)
+                     decoration: const BoxDecoration(color: Color(0x33DEA080), shape: BoxShape.circle), 
+                     child: const Icon(Icons.favorite_rounded, color: Color(0xFFDEA080), size: 20)
                    ),
                    const SizedBox(width: 16),
                    const Expanded(child: Text('Cosmic Alignment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: AppColors.textPrimary))),
                 ]
               ),
               const SizedBox(height: 24),
-              _buildSyncBar('Communication', _getRingValue("comm", _selectedDate), Colors.lightBlue, Icons.chat_bubble_outline),
+              _buildSyncBar('Communication', _getRingValue("comm", _selectedDate), const Color(0xFF8784B4), Icons.chat_bubble_outline),
               const SizedBox(height: 16),
-              _buildSyncBar('Intimacy', _getRingValue("intimacy", _selectedDate), Colors.pink, Icons.favorite_border),
+              _buildSyncBar('Intimacy', _getRingValue("intimacy", _selectedDate), const Color(0xFFDEA080), Icons.favorite_border),
               const SizedBox(height: 16),
-              _buildSyncBar('Patience', _getRingValue("patience", _selectedDate), Colors.green, Icons.self_improvement),
+              _buildSyncBar('Patience', _getRingValue("patience", _selectedDate), const Color(0xFF788B7A), Icons.self_improvement),
                const SizedBox(height: 24),
               Align(
                 alignment: Alignment.centerRight,
@@ -641,9 +641,9 @@ class _DashboardViewState extends State<_DashboardView> {
                   key: ValueKey(_selectedDate),
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildRing('ENERGY', _getRingValue('energy', _selectedDate), Colors.orange, 'Physical drive based on Sun aspect.'),
-                    _buildRing('LOGIC', _getRingValue('logic', _selectedDate), Colors.lightBlue, 'Rational speed (Mercury in 3rd House).'),
-                    _buildRing('CAREER', _getRingValue('career', _selectedDate), Colors.purple, 'Material goals (Midheaven aspect).'),
+                    _buildRing('ENERGY', _getRingValue('energy', _selectedDate), const Color(0xFFE7AD5D), 'Physical drive based on Sun aspect.'),
+                    _buildRing('LOGIC', _getRingValue('logic', _selectedDate), const Color(0xFF8784B4), 'Rational speed (Mercury in 3rd House).'),
+                    _buildRing('CAREER', _getRingValue('career', _selectedDate), const Color(0xFF788B7A), 'Material goals (Midheaven aspect).'),
                   ],
                 ),
               ),
@@ -682,9 +682,9 @@ class _DashboardViewState extends State<_DashboardView> {
                                 crossAxisAlignment: CrossAxisAlignment.baseline,
                                 textBaseline: TextBaseline.alphabetic,
                                 children: [
-                                  Text('${_getRingValue("sync", _selectedDate)}%', style: const TextStyle(color: Colors.pink, fontWeight: FontWeight.bold, fontSize: 24)),
+                                  Text('${_getRingValue("sync", _selectedDate)}%', style: const TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.bold, fontSize: 24)),
                                   const SizedBox(width: 8),
-                                  Text(_getRingValue("sync", _selectedDate) > 65 ? 'STRONG' : 'FAIR', style: const TextStyle(color: Colors.pink, fontWeight: FontWeight.bold, fontSize: 10)),
+                                  Text(_getRingValue("sync", _selectedDate) > 65 ? 'STRONG' : 'FAIR', style: const TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.bold, fontSize: 10)),
                                 ]
                               )
                            ]
@@ -727,9 +727,9 @@ class _DashboardViewState extends State<_DashboardView> {
                                     crossAxisAlignment: CrossAxisAlignment.baseline,
                                     textBaseline: TextBaseline.alphabetic,
                                     children: [
-                                      Text('8.2', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 24)),
-                                      SizedBox(width: 8),
-                                      Text('HIGH', style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 10)),
+                                      Text('8.2', style: const TextStyle(color: Color(0xFFE7AD5D), fontWeight: FontWeight.bold, fontSize: 24)),
+                                      const SizedBox(width: 8),
+                                      const Text('HIGH', style: TextStyle(color: Color(0xFFE7AD5D), fontWeight: FontWeight.bold, fontSize: 10)),
                                     ]
                                   )
                                ]
@@ -761,9 +761,9 @@ class _DashboardViewState extends State<_DashboardView> {
               ),
               const SizedBox(height: 12),
               
-              _buildListTile('Positives', 'Financial gains strongly favored.', Icons.trending_up_rounded, Colors.green),
+              _buildListTile('Positives', 'Financial gains strongly favored.', Icons.trending_up_rounded, const Color(0xFF788B7A)),
               const SizedBox(height: 8),
-              _buildListTile('Precautions', 'Avoid arguments around 5 PM.', Icons.warning_amber_rounded, Colors.red),
+              _buildListTile('Precautions', 'Avoid arguments around 5 PM.', Icons.warning_amber_rounded, const Color(0xFFDEA080)),
               const SizedBox(height: 48), // Padding bottom
             ],
           ),
