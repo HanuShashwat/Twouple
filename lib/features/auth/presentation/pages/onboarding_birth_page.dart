@@ -60,8 +60,8 @@ class _OnboardingBirthPageState extends State<OnboardingBirthPage> {
       lastDate: DateTime.now(),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light(
               primary: AppColors.primary,
               onPrimary: AppColors.background,
               surface: AppColors.surface,
@@ -85,8 +85,8 @@ class _OnboardingBirthPageState extends State<OnboardingBirthPage> {
       initialTime: TimeOfDay.now(),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
+          data: ThemeData.light().copyWith(
+            colorScheme: const ColorScheme.light(
               primary: AppColors.primary,
               surface: AppColors.surface,
               onSurface: AppColors.textPrimary,
@@ -220,7 +220,7 @@ class _OnboardingBirthPageState extends State<OnboardingBirthPage> {
                 decoration: BoxDecoration(
                   color: AppColors.elevated,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade800),
+                  border: Border.all(color: AppColors.textMuted.withValues(alpha: 0.3)),
                 ),
                 child: ListView.separated(
                   shrinkWrap: true,
@@ -247,7 +247,7 @@ class _OnboardingBirthPageState extends State<OnboardingBirthPage> {
               height: 220,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade800),
+                border: Border.all(color: AppColors.textMuted.withValues(alpha: 0.3)),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),

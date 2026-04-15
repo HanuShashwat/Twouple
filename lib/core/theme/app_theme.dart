@@ -3,24 +3,24 @@ import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_constants.dart';
 
 class AppTheme {
-  static ThemeData get darkTheme {
+  static ThemeData get lightTheme {
     return ThemeData(
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.background,
       primaryColor: AppColors.primary,
-      colorScheme: ColorScheme.dark(
+      colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
         secondary: AppColors.secondary,
         error: AppColors.error,
         surface: AppColors.surface,
       ),
-      textTheme: GoogleFonts.syneTextTheme(ThemeData.dark().textTheme).copyWith(
-        displayLarge: GoogleFonts.dmSerifDisplay(color: AppColors.textPrimary),
-        displayMedium: GoogleFonts.dmSerifDisplay(color: AppColors.textPrimary),
-        titleLarge: GoogleFonts.dmSerifDisplay(color: AppColors.textPrimary),
-        bodyLarge: GoogleFonts.syne(color: AppColors.textPrimary),
-        bodyMedium: GoogleFonts.syne(color: AppColors.textSecondary),
-        labelLarge: GoogleFonts.ibmPlexMono(color: AppColors.textPrimary),
+      textTheme: GoogleFonts.jostTextTheme(ThemeData.light().textTheme).copyWith(
+        displayLarge: GoogleFonts.jost(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        displayMedium: GoogleFonts.jost(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+        titleLarge: GoogleFonts.jost(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+        bodyLarge: GoogleFonts.outfit(color: AppColors.textPrimary),
+        bodyMedium: GoogleFonts.outfit(color: AppColors.textSecondary),
+        labelLarge: GoogleFonts.outfit(color: AppColors.textPrimary, fontWeight: FontWeight.w500),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -31,7 +31,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(12),
           ),
           padding: const EdgeInsets.symmetric(vertical: 16),
-          textStyle: GoogleFonts.syne(fontWeight: FontWeight.bold, fontSize: 16),
+          textStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(

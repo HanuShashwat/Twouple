@@ -19,7 +19,7 @@ class TwoupleApp extends StatelessWidget {
       ],
       child: MaterialApp.router(
         title: 'Twouple',
-        theme: AppTheme.darkTheme,
+        theme: AppTheme.lightTheme,
         routerConfig: AppRouter.router,
         debugShowCheckedModeBanner: false,
       ),

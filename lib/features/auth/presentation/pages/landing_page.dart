@@ -72,7 +72,7 @@ class _LandingPageState extends State<LandingPage> with SingleTickerProviderStat
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.volunteer_activism_rounded,
+                            Icons.auto_awesome_rounded,
                             size: 48,
                             color: AppColors.primary,
                           ),
