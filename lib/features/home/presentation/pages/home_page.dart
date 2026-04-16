@@ -86,6 +86,16 @@ class _DashboardViewState extends State<_DashboardView> {
   final PageController _chartPageController = PageController(initialPage: 1);
   DateTime _selectedDate = DateTime.now();
 
+  final List<String> _userDoItems = [];
+  final List<bool> _userDoChecked = [];
+  final List<String> _userAvoidItems = [];
+  final List<bool> _userAvoidChecked = [];
+
+  bool _isAddingDo = false;
+  bool _isAddingAvoid = false;
+  final TextEditingController _customDoController = TextEditingController();
+  final TextEditingController _customAvoidController = TextEditingController();
+
 
   @override
   void dispose() {
@@ -613,94 +623,9 @@ class _DashboardViewState extends State<_DashboardView> {
             scrollDirection: Axis.horizontal,
             itemCount: cards.length,
             itemBuilder: (context, i) {
-              final card = cards[i];
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.fastEaseInToSlowEaseOut,
-                width: 140,
-                margin: EdgeInsets.only(right: i < cards.length - 1 ? 10 : 0),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.elevated,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: card.color.withValues(alpha: 0.2)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Icon + label row
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: card.color.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(card.icon, color: card.color, size: 16),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '${card.score}',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                            color: card.color,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      card.label,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.3,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    // Score bar
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: TweenAnimationBuilder<double>(
-                        tween: Tween<double>(begin: 0, end: card.score / 100),
-                        duration: const Duration(milliseconds: 900),
-                        curve: Curves.fastEaseInToSlowEaseOut,
-                        builder: (context, val, _) => LinearProgressIndicator(
-                          value: val,
-                          minHeight: 5,
-                          backgroundColor: card.color.withValues(alpha: 0.12),
-                          valueColor: AlwaysStoppedAnimation<Color>(card.color),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Planet
-                    Text(
-                      card.planet,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textMuted,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    // Tip
-                    Text(
-                      card.tip,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textSecondary,
-                        height: 1.4,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+              return _InteractiveInfluenceCard(
+                 card: cards[i],
+                 isLast: i == cards.length - 1,
               );
             },
           ),
@@ -752,6 +677,24 @@ class _DashboardViewState extends State<_DashboardView> {
           const Color(0xFF788B7A),
           () => setState(() => _doChecked[i] = !_doChecked[i]),
         )),
+        ...List.generate(_userDoItems.length, (i) => _buildCheckItem(
+          _userDoItems[i],
+          _userDoChecked[i],
+          const Color(0xFF788B7A),
+          () => setState(() => _userDoChecked[i] = !_userDoChecked[i]),
+        )),
+        _buildCustomAddInput('Do', _isAddingDo, _customDoController, const Color(0xFF788B7A), () => setState(() => _isAddingDo = true), (val) {
+           if (val.trim().isNotEmpty) {
+             setState(() {
+                _userDoItems.add(val.trim());
+                _userDoChecked.add(false);
+             });
+           }
+           setState(() {
+             _isAddingDo = false;
+             _customDoController.clear();
+           });
+        }),
         const SizedBox(height: 16),
 
         // ── Avoid today ───────────────────────────────────────────────────
@@ -767,8 +710,72 @@ class _DashboardViewState extends State<_DashboardView> {
           () => setState(() => _avoidChecked[i] = !_avoidChecked[i]),
           isWarning: true,
         )),
+        ...List.generate(_userAvoidItems.length, (i) => _buildCheckItem(
+          _userAvoidItems[i],
+          _userAvoidChecked[i],
+          const Color(0xFFDEA080),
+          () => setState(() => _userAvoidChecked[i] = !_userAvoidChecked[i]),
+          isWarning: true,
+        )),
+        _buildCustomAddInput('Avoid', _isAddingAvoid, _customAvoidController, const Color(0xFFDEA080), () => setState(() => _isAddingAvoid = true), (val) {
+           if (val.trim().isNotEmpty) {
+             setState(() {
+                _userAvoidItems.add(val.trim());
+                _userAvoidChecked.add(false);
+             });
+           }
+           setState(() {
+             _isAddingAvoid = false;
+             _customAvoidController.clear();
+           });
+        }),
       ],
     );
+  }
+
+  Widget _buildCustomAddInput(String type, bool isAdding, TextEditingController controller, Color color, VoidCallback onAdd, ValueChanged<String> onSubmitted) {
+     if (!isAdding) {
+       return GestureDetector(
+         onTap: onAdd,
+         child: Container(
+           margin: const EdgeInsets.only(bottom: 8),
+           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+           decoration: BoxDecoration(
+             color: AppColors.elevated,
+             borderRadius: BorderRadius.circular(12),
+             border: Border.all(color: AppColors.secondary.withValues(alpha: 0.1)),
+           ),
+           child: Row(
+             children: [
+                Icon(Icons.add_rounded, color: color, size: 20),
+                const SizedBox(width: 12),
+                Text('Add custom $type...', style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13)),
+             ],
+           ),
+         ),
+       );
+     }
+     
+     return Container(
+       margin: const EdgeInsets.only(bottom: 8),
+       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+       decoration: BoxDecoration(
+         color: AppColors.elevated,
+         borderRadius: BorderRadius.circular(12),
+         border: Border.all(color: color.withValues(alpha: 0.3)),
+       ),
+       child: TextField(
+         controller: controller,
+         autofocus: true,
+         style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+         decoration: InputDecoration(
+            hintText: 'Enter a custom $type...',
+            hintStyle: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.normal),
+            border: InputBorder.none,
+         ),
+         onSubmitted: onSubmitted,
+       ),
+     );
   }
 
   Widget _buildCheckItem(String text, bool checked, Color color, VoidCallback onTap, {bool isWarning = false}) {
@@ -1088,7 +1095,7 @@ class _AnimatedOutlookCardState extends State<_AnimatedOutlookCard> with SingleT
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat(reverse: true);
   }
 
   @override
@@ -1913,6 +1920,13 @@ class _AIAssistantViewState extends State<_AIAssistantView>
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4, left: 4),
+              child: IconButton(
+                icon: const Icon(Icons.attach_file_rounded, color: AppColors.textSecondary),
+                onPressed: () { /* Future attachment handler */ },
+              ),
+            ),
             Expanded(
               child: TextField(
                 controller: _promptController,
@@ -2000,26 +2014,12 @@ class _MoreView extends StatelessWidget {
       ],
     ),
     _MoreSection(
-      title: 'EXPLORE',
-      items: [
-        _MoreItem(icon: Icons.wb_sunny_outlined, label: 'Daily Horoscope', subtitle: 'Today\'s planetary influences', route: '/daily-insight', color: Color(0xFFE7AD5D)),
-        _MoreItem(icon: Icons.upload_file_outlined, label: 'Import Chart', subtitle: 'Add a chart from a file', route: '/import', color: Color(0xFF8784B4)),
-        _MoreItem(icon: Icons.smart_toy_outlined, label: 'Chat with Aura', subtitle: 'Open the AI coach chatbot', route: '/chatbot', color: Color(0xFF9C4F36)),
-      ],
-    ),
-    _MoreSection(
-      title: 'ACCOUNT',
+      title: 'SETTINGS',
       items: [
         _MoreItem(icon: Icons.notifications_none_rounded, label: 'Notifications', subtitle: 'Daily reminders & alerts', color: Color(0xFF788B7A)),
         _MoreItem(icon: Icons.workspace_premium_outlined, label: 'Upgrade to Premium', subtitle: 'Unlock all cosmic insights', route: '/paywall', color: Color(0xFFE7AD5D), isPremium: true),
         _MoreItem(icon: Icons.lock_outline_rounded, label: 'Privacy & Data', subtitle: 'Manage your information', color: Color(0xFF8784B4)),
-      ],
-    ),
-    _MoreSection(
-      title: 'SUPPORT',
-      items: [
         _MoreItem(icon: Icons.help_outline_rounded, label: 'Help & FAQ', subtitle: 'Answers to common questions', color: Color(0xFF788B7A)),
-        _MoreItem(icon: Icons.star_outline_rounded, label: 'Rate Twouple', subtitle: 'Share your experience', color: Color(0xFFE7AD5D)),
         _MoreItem(icon: Icons.mail_outline_rounded, label: 'Contact Support', subtitle: 'We\'re here to help', color: Color(0xFF8784B4)),
       ],
     ),
@@ -2904,6 +2904,134 @@ class _InteractiveMetricTileState extends State<_InteractiveMetricTile> {
           ),
         )
       )
+    );
+  }
+}
+
+class _InteractiveInfluenceCard extends StatefulWidget {
+  final _InfluenceCardData card;
+  final bool isLast;
+  const _InteractiveInfluenceCard({required this.card, required this.isLast});
+
+  @override
+  State<_InteractiveInfluenceCard> createState() => _InteractiveInfluenceCardState();
+}
+
+class _InteractiveInfluenceCardState extends State<_InteractiveInfluenceCard> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.fastEaseInToSlowEaseOut,
+        width: _isExpanded ? 240 : 140,
+        margin: EdgeInsets.only(right: widget.isLast ? 0 : 10),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: _isExpanded ? widget.card.color.withValues(alpha: 0.05) : AppColors.elevated,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: widget.card.color.withValues(alpha: _isExpanded ? 0.4 : 0.2)),
+        ),
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icon + label row
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: widget.card.color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(widget.card.icon, color: widget.card.color, size: 16),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${widget.card.score}',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: widget.card.color,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.card.label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.3,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              // Score bar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0, end: widget.card.score / 100),
+                  duration: const Duration(milliseconds: 900),
+                  curve: Curves.fastEaseInToSlowEaseOut,
+                  builder: (context, val, _) => LinearProgressIndicator(
+                    value: val,
+                    minHeight: 5,
+                    backgroundColor: widget.card.color.withValues(alpha: 0.12),
+                    valueColor: AlwaysStoppedAnimation<Color>(widget.card.color),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Planet
+              Text(
+                widget.card.planet,
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: AppColors.textMuted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              // Tip
+              AnimatedCrossFade(
+                duration: const Duration(milliseconds: 300),
+                firstChild: Text(
+                  widget.card.tip,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                    height: 1.4,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                secondChild: Text(
+                  widget.card.tip,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textPrimary,
+                    height: 1.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
