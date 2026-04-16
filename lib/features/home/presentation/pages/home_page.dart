@@ -339,28 +339,58 @@ class _DashboardViewState extends State<_DashboardView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              currentChartPage == 0 ? 'Energy Trend (Previous Week)' : 'Energy Trend (Upcoming Week)', 
-                              style: const TextStyle(fontWeight: FontWeight.bold)
-                            ),
-                            const Spacer(),
-                            const Icon(Icons.swipe_rounded, size: 16, color: AppColors.textSecondary),
-                          ],
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 250),
+                          child: Text(
+                            currentChartPage == 0 ? 'Energy Trend (Previous Week)' : 'Energy Trend (Upcoming Week)',
+                            key: ValueKey(currentChartPage),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                         Expanded(
                           child: GestureDetector(
                             onHorizontalDragEnd: (details) {
                               if (details.primaryVelocity! > 0 && currentChartPage == 1) {
-                                setState(() => currentChartPage = 0); 
+                                setState(() => currentChartPage = 0);
                               } else if (details.primaryVelocity! < 0 && currentChartPage == 0) {
-                                setState(() => currentChartPage = 1); 
+                                setState(() => currentChartPage = 1);
                               }
                             },
-                            child: currentChartPage == 0 
-                                ? _buildLineChartWidget(pastSpots, _getDaysMap(true))
-                                : _buildLineChartWidget(futureSpots, _getDaysMap(false)),
+                            // AnimatedSwitcher with directional slide:
+                            //   page 0 (past)   = slides in from left
+                            //   page 1 (future) = slides in from right
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 450),
+                              switchInCurve: Curves.easeOutCubic,
+                              switchOutCurve: Curves.easeInCubic,
+                              transitionBuilder: (child, animation) {
+                                // The child's key tells us which chart it is
+                                final isPage0 = (child.key == const ValueKey(0));
+                                final beginOffset = isPage0
+                                    ? const Offset(-0.25, 0) // past slides in from left
+                                    : const Offset(0.25, 0);  // future slides in from right
+                                final slideAnim = Tween<Offset>(
+                                  begin: beginOffset,
+                                  end: Offset.zero,
+                                ).animate(CurvedAnimation(
+                                  parent: animation,
+                                  curve: Curves.easeOutCubic,
+                                ));
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: SlideTransition(
+                                    position: slideAnim,
+                                    child: child,
+                                  ),
+                                );
+                              },
+                              child: KeyedSubtree(
+                                key: ValueKey(currentChartPage),
+                                child: currentChartPage == 0
+                                    ? _buildLineChartWidget(pastSpots, _getDaysMap(true))
+                                    : _buildLineChartWidget(futureSpots, _getDaysMap(false)),
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -369,22 +399,22 @@ class _DashboardViewState extends State<_DashboardView> {
                           children: [
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
-                              width: currentChartPage == 0 ? 8 : 6, 
-                              height: 6, 
+                              width: currentChartPage == 0 ? 8 : 6,
+                              height: 6,
                               decoration: BoxDecoration(
-                                color: currentChartPage == 0 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
-                                borderRadius: BorderRadius.circular(6)
-                              )
+                                color: currentChartPage == 0 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
                             ),
                             const SizedBox(width: 8),
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
-                              width: currentChartPage == 1 ? 8 : 6, 
-                              height: 6, 
+                              width: currentChartPage == 1 ? 8 : 6,
+                              height: 6,
                               decoration: BoxDecoration(
-                                color: currentChartPage == 1 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
-                                borderRadius: BorderRadius.circular(6)
-                              )
+                                color: currentChartPage == 1 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
                             ),
                           ],
                         ),
