@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
         index: _currentIndex,
         children: const [
           _DashboardView(),
-          _PartnerSyncView(),
+          SizedBox.shrink(),
           _AIAssistantView(),
           _MoreView(),
         ],
@@ -32,6 +32,14 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (idx) {
+          if (idx == 1) {
+             Navigator.push(context, PageRouteBuilder(
+               pageBuilder: (context, anim1, anim2) => const _PartnerSyncView(),
+               transitionsBuilder: (context, anim1, anim2, child) => FadeTransition(opacity: anim1, child: child),
+               transitionDuration: const Duration(milliseconds: 300),
+             ));
+             return;
+          }
           setState(() {
             _currentIndex = idx;
           });
@@ -1222,13 +1230,26 @@ class _PartnerSyncViewState extends State<_PartnerSyncView> with SingleTickerPro
 
   @override
   Widget build(BuildContext context) {
-    return CelestialBackground(
-      child: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 1000),
-          switchInCurve: Curves.fastEaseInToSlowEaseOut,
-          switchOutCurve: Curves.fastEaseInToSlowEaseOut,
-          child: _buildCurrentPhase(),
+    if (_phase == SyncPhase.synced) {
+       return const _PartnerChatPage();
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: const BackButton(color: AppColors.textPrimary),
+      ),
+      body: CelestialBackground(
+        child: SafeArea(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 1000),
+            switchInCurve: Curves.fastEaseInToSlowEaseOut,
+            switchOutCurve: Curves.fastEaseInToSlowEaseOut,
+            child: _buildCurrentPhase(),
+          ),
         ),
       ),
     );
@@ -1249,7 +1270,7 @@ class _PartnerSyncViewState extends State<_PartnerSyncView> with SingleTickerPro
           child: _buildSplashState(),
         );
       case SyncPhase.synced:
-        return const _PartnerChatPage();
+        return const SizedBox.shrink();
     }
   }
 
@@ -2529,17 +2550,6 @@ class _PartnerChatPageState extends State<_PartnerChatPage> {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('AI is analyzing your tone...')));
                },
              ),
-             IconButton(
-               icon: const Icon(Icons.analytics_rounded, color: AppColors.textPrimary),
-               tooltip: 'Relationship Hub',
-               onPressed: () {
-                  Navigator.push(context, PageRouteBuilder(
-                    pageBuilder: (context, anim1, anim2) => const _RelationshipHubPage(),
-                    transitionsBuilder: (context, anim1, anim2, child) => FadeTransition(opacity: anim1, child: child),
-                    transitionDuration: const Duration(milliseconds: 300),
-                  ));
-               },
-             ),
              PopupMenuButton<String>(
                icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
                color: AppColors.elevated,
@@ -2547,11 +2557,21 @@ class _PartnerChatPageState extends State<_PartnerChatPage> {
                  const PopupMenuItem(
                    value: 'export',
                    child: Text('Sync from WhatsApp', style: TextStyle(color: AppColors.textPrimary)),
-                 )
+                 ),
+                 const PopupMenuItem(
+                   value: 'hub',
+                   child: Text('Relationship Hub', style: TextStyle(color: AppColors.textPrimary)),
+                 ),
                ],
                onSelected: (val) {
                  if (val == 'export') {
                     _showWhatsAppExportDialog();
+                 } else if (val == 'hub') {
+                    Navigator.push(context, PageRouteBuilder(
+                      pageBuilder: (context, anim1, anim2) => const _RelationshipHubPage(),
+                      transitionsBuilder: (context, anim1, anim2, child) => FadeTransition(opacity: anim1, child: child),
+                      transitionDuration: const Duration(milliseconds: 300),
+                    ));
                  }
                }
              )
