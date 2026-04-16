@@ -508,33 +508,315 @@ class _DashboardViewState extends State<_DashboardView> {
     );
   }
 
-  Widget _buildListTile(String title, String subtitle, IconData icon, Color color) {
-     return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: AppColors.elevated, borderRadius: BorderRadius.circular(16)),
+  // ── Today's Influences ──────────────────────────────────────────────────
+
+  // Checklist state: tracked by index
+  final List<bool> _doChecked  = [false, false, false];
+  final List<bool> _avoidChecked = [false, false, false];
+
+  // Deterministic score 40-99 from date + seed string
+  int _score(String seed) {
+    final h = (_selectedDate.day * 17 + _selectedDate.month * 31 + seed.hashCode).abs();
+    return (h % 60) + 40;
+  }
+
+  Widget _buildInfluencesSection() {
+    // ── 5 influence cards ─────────────────────────────────────────────────
+    final cards = [
+      _InfluenceCardData(
+        label: 'LOVE',
+        icon: Icons.favorite_border_rounded,
+        color: const Color(0xFFDEA080),
+        planet: 'Venus trine Moon',
+        tip: "Express something you've been holding back.",
+        score: _score('love'),
+      ),
+      _InfluenceCardData(
+        label: 'CAREER',
+        icon: Icons.trending_up_rounded,
+        color: const Color(0xFF788B7A),
+        planet: 'Sun sextile Saturn',
+        tip: 'Ideal for pitching ideas to authority figures.',
+        score: _score('career'),
+      ),
+      _InfluenceCardData(
+        label: 'HEALTH',
+        icon: Icons.self_improvement_rounded,
+        color: const Color(0xFF8784B4),
+        planet: 'Mars in 6th house',
+        tip: 'Physical activity will feel especially rewarding.',
+        score: _score('health'),
+      ),
+      _InfluenceCardData(
+        label: 'MINDSET',
+        icon: Icons.lightbulb_outline_rounded,
+        color: const Color(0xFFE7AD5D),
+        planet: 'Mercury sextile Jupiter',
+        tip: 'Your mind is sharp — tackle complex problems now.',
+        score: _score('mindset'),
+      ),
+      _InfluenceCardData(
+        label: 'TIMING',
+        icon: Icons.schedule_rounded,
+        color: AppColors.primary,
+        planet: 'Moon in 10th house',
+        tip: 'Afternoon energies peak. Morning is for planning.',
+        score: _score('timing'),
+      ),
+    ];
+
+    // ── Peak window ───────────────────────────────────────────────────────
+    final peakStart = 9 + (_score('peak') % 5); // 9–13
+    final peakEnd   = peakStart + 3;
+    final peakLabel = '${peakStart > 12 ? peakStart - 12 : peakStart}${peakStart >= 12 ? 'PM' : 'AM'}'
+        ' – ${peakEnd > 12 ? peakEnd - 12 : peakEnd}${peakEnd >= 12 ? 'PM' : 'AM'}';
+
+    // ── Do / Avoid lists ─────────────────────────────────────────────────
+    final doItems = [
+      'Schedule important conversations',
+      'Make financial decisions before 3 PM',
+      "Reach out to someone you've been distant from",
+    ];
+    final avoidItems = [
+      'Avoid reactive decisions after 6 PM',
+      "Don't sign contracts without reading twice",
+      'Skip high-intensity workouts — rest is better today',
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Section header ───────────────────────────────────────────────
+        const Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "TODAY'S INFLUENCES",
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.2, color: AppColors.textPrimary),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+
+        // ── Horizontal score cards ────────────────────────────────────────
+        SizedBox(
+          height: 168,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: cards.length,
+            itemBuilder: (context, i) {
+              final card = cards[i];
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.fastEaseInToSlowEaseOut,
+                width: 140,
+                margin: EdgeInsets.only(right: i < cards.length - 1 ? 10 : 0),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.elevated,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: card.color.withValues(alpha: 0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Icon + label row
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: card.color.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(card.icon, color: card.color, size: 16),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${card.score}',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: card.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      card.label,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.3,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    // Score bar
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 0, end: card.score / 100),
+                        duration: const Duration(milliseconds: 900),
+                        curve: Curves.fastEaseInToSlowEaseOut,
+                        builder: (context, val, _) => LinearProgressIndicator(
+                          value: val,
+                          minHeight: 5,
+                          backgroundColor: card.color.withValues(alpha: 0.12),
+                          valueColor: AlwaysStoppedAnimation<Color>(card.color),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    // Planet
+                    Text(
+                      card.planet,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    // Tip
+                    Text(
+                      card.tip,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                        height: 1.4,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // ── Peak timing banner ────────────────────────────────────────────
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.primary.withValues(alpha: 0.08), const Color(0xFFE7AD5D).withValues(alpha: 0.08)],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.bolt_rounded, color: AppColors.primary, size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: RichText(
+                  text: TextSpan(
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                    children: [
+                      const TextSpan(text: 'Peak cosmic window today:  '),
+                      TextSpan(
+                        text: peakLabel,
+                        style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w800),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // ── Do today ──────────────────────────────────────────────────────
+        const Text(
+          'DO TODAY',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.4, color: AppColors.textMuted),
+        ),
+        const SizedBox(height: 8),
+        ...List.generate(doItems.length, (i) => _buildCheckItem(
+          doItems[i],
+          _doChecked[i],
+          const Color(0xFF788B7A),
+          () => setState(() => _doChecked[i] = !_doChecked[i]),
+        )),
+        const SizedBox(height: 16),
+
+        // ── Avoid today ───────────────────────────────────────────────────
+        const Text(
+          'AVOID TODAY',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.4, color: AppColors.textMuted),
+        ),
+        const SizedBox(height: 8),
+        ...List.generate(avoidItems.length, (i) => _buildCheckItem(
+          avoidItems[i],
+          _avoidChecked[i],
+          const Color(0xFFDEA080),
+          () => setState(() => _avoidChecked[i] = !_avoidChecked[i]),
+          isWarning: true,
+        )),
+      ],
+    );
+  }
+
+  Widget _buildCheckItem(String text, bool checked, Color color, VoidCallback onTap, {bool isWarning = false}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.fastEaseInToSlowEaseOut,
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: checked ? color.withValues(alpha: 0.08) : AppColors.elevated,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: checked ? color.withValues(alpha: 0.3) : AppColors.secondary.withValues(alpha: 0.2),
+          ),
+        ),
         child: Row(
           children: [
-             Container(
-               width: 48,
-               height: 48,
-               decoration: BoxDecoration(color: color.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-               child: Icon(icon, color: color),
-             ),
-             const SizedBox(width: 16),
-             Expanded(
-               child: Column(
-                 crossAxisAlignment: CrossAxisAlignment.start,
-                 children: [
-                     Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppColors.textPrimary)),
-                     const SizedBox(height: 4),
-                     Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w600)),
-                 ]
-               )
-             )
-          ]
-        )
-     );
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: checked ? color : Colors.transparent,
+                border: Border.all(
+                  color: checked ? color : color.withValues(alpha: 0.4),
+                  width: 1.5,
+                ),
+              ),
+              child: checked
+                  ? const Icon(Icons.check_rounded, size: 12, color: Colors.white)
+                  : (isWarning ? Icon(Icons.close_rounded, size: 12, color: color.withValues(alpha: 0.5)) : const SizedBox.shrink()),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 250),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: checked ? AppColors.textMuted : AppColors.textPrimary,
+                  decoration: checked ? TextDecoration.lineThrough : TextDecoration.none,
+                  decorationColor: AppColors.textMuted,
+                  height: 1.4,
+                ),
+                child: Text(text),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -774,20 +1056,8 @@ class _DashboardViewState extends State<_DashboardView> {
               const _AnimatedOutlookCard(),
               const SizedBox(height: 24),
 
-              // Today's Activities
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("TODAY'S INFLUENCES", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.2, color: AppColors.textPrimary)),
-                  Icon(Icons.open_in_full_rounded, size: 14, color: AppColors.textPrimary),
-                ],
-              ),
-              const SizedBox(height: 12),
-              
-              _buildListTile('Positives', 'Financial gains strongly favored.', Icons.trending_up_rounded, const Color(0xFF788B7A)),
-              const SizedBox(height: 8),
-              _buildListTile('Precautions', 'Avoid arguments around 5 PM.', Icons.warning_amber_rounded, const Color(0xFFDEA080)),
-              const SizedBox(height: 48), // Padding bottom
+              _buildInfluencesSection(),
+              const SizedBox(height: 48),
             ],
           ),
         ),
@@ -2059,3 +2329,23 @@ class _MoreItem {
     this.isPremium = false,
   });
 }
+
+// ── Influence card data model ─────────────────────────────────────────────────
+
+class _InfluenceCardData {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final String planet;
+  final String tip;
+  final int score;
+  const _InfluenceCardData({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.planet,
+    required this.tip,
+    required this.score,
+  });
+}
+
