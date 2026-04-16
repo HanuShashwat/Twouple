@@ -1180,99 +1180,192 @@ class _PartnerSyncView extends StatefulWidget {
   State<_PartnerSyncView> createState() => _PartnerSyncViewState();
 }
 
-class _PartnerSyncViewState extends State<_PartnerSyncView> {
+class _PartnerSyncViewState extends State<_PartnerSyncView> with SingleTickerProviderStateMixin {
   final TextEditingController _partnerPhoneController = TextEditingController();
   bool _isLoading = false;
+  bool _invitationSent = false;
+  late final AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+        vsync: this, duration: const Duration(seconds: 2))
+      ..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _partnerPhoneController.dispose();
+    super.dispose();
+  }
 
   void _syncPartner() async {
     if (_partnerPhoneController.text.length != 10) return;
     
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 2));
-    setState(() => _isLoading = false);
-    
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invitation sent successfully! Awaiting their approval.'),
-          backgroundColor: AppColors.secondary,
-        ),
-      );
-      _partnerPhoneController.clear();
-    }
+    setState(() {
+      _isLoading = false;
+      _invitationSent = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.background,
-            AppColors.surface,
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-      ),
+    return CelestialBackground(
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(28.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(),
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.connect_without_contact_rounded,
-                    size: 64,
-                    color: AppColors.secondary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Joint Alignment',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 32),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Invite someone special to link charts. Our AI will automatically generate deep personalized astrological insights spanning both of your lives.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 16,
-                      height: 1.5,
-                    ),
-              ),
-              const SizedBox(height: 48),
-              CustomTextField(
-                label: "Partner's phone number",
-                hint: 'e.g. 9876543210',
-                controller: _partnerPhoneController,
-                keyboardType: TextInputType.phone,
-                prefixIcon: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  child: Text('+91 ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
-                ),
-              ),
-              const Spacer(),
-              CustomButton(
-                text: 'Send Invitation',
-                isLoading: _isLoading,
-                onPressed: _syncPartner,
-              ),
-            ],
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 600),
+            switchInCurve: Curves.fastEaseInToSlowEaseOut,
+            switchOutCurve: Curves.fastEaseInToSlowEaseOut,
+            child: _invitationSent ? _buildSentState() : _buildInputState(),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInputState() {
+    return Column(
+      key: const ValueKey('input'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Spacer(),
+        Center(
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.connect_without_contact_rounded,
+              size: 64,
+              color: AppColors.secondary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 32),
+        Text(
+          'Joint Alignment',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 32),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'Invite someone special to link charts. Our AI will automatically generate deep personalized astrological insights spanning both of your lives.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 16,
+                height: 1.5,
+              ),
+        ),
+        const SizedBox(height: 48),
+        CustomTextField(
+          label: "Partner's phone number",
+          hint: 'e.g. 9876543210',
+          controller: _partnerPhoneController,
+          keyboardType: TextInputType.phone,
+          prefixIcon: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Text('+91 ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          ),
+        ),
+        const Spacer(),
+        CustomButton(
+          text: 'Send Invitation',
+          isLoading: _isLoading,
+          onPressed: _syncPartner,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSentState() {
+    return Column(
+      key: const ValueKey('sent'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Spacer(),
+        Center(
+          child: AnimatedBuilder(
+            animation: _pulseController,
+            builder: (context, _) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Outer glowing ripple
+                  Container(
+                    width: 140 + (_pulseController.value * 20),
+                    height: 140 + (_pulseController.value * 20),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.secondary.withValues(alpha: 0.1 + (0.2 * (1 - _pulseController.value))),
+                        width: 2,
+                      ),
+                    ),
+                  ),
+                  // Inner pulse core
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.secondary.withValues(alpha: 0.1 + (0.1 * _pulseController.value)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.secondary.withValues(alpha: 0.2 * _pulseController.value),
+                          blurRadius: 20 * _pulseController.value,
+                          spreadRadius: 5 * _pulseController.value,
+                        )
+                      ]
+                    ),
+                    child: const Icon(Icons.flare_rounded, color: AppColors.secondary, size: 48),
+                  ),
+                ],
+              );
+            }
+          ),
+        ),
+        const SizedBox(height: 48),
+        Text(
+          'Cosmic Alignment\nPending...',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 28),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          "An invitation has been sent to +91 ${_partnerPhoneController.text}. Once they join, your charts will automatically sync and generate personalized insights.",
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 16,
+                height: 1.5,
+              ),
+        ),
+        const Spacer(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: TextButton(
+            onPressed: () {
+              setState(() {
+                 _invitationSent = false;
+                 _partnerPhoneController.clear();
+              });
+            },
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: const Text('Cancel Request', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 16)),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1415,17 +1508,19 @@ class _AIAssistantViewState extends State<_AIAssistantView>
   // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.background,
-      child: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(child: _buildChatList()),
-            _buildTypingIndicator(),
-            _buildSuggestionChips(),
-            _buildInputBar(),
-          ],
+    return CelestialBackground(
+      child: Container(
+        color: Colors.transparent,
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(child: _buildChatList()),
+              _buildTypingIndicator(),
+              _buildSuggestionChips(),
+              _buildInputBar(),
+            ],
+          ),
         ),
       ),
     );
