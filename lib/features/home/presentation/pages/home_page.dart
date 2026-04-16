@@ -1180,10 +1180,12 @@ class _PartnerSyncView extends StatefulWidget {
   State<_PartnerSyncView> createState() => _PartnerSyncViewState();
 }
 
+enum SyncPhase { input, splash, synced }
+
 class _PartnerSyncViewState extends State<_PartnerSyncView> with SingleTickerProviderStateMixin {
   final TextEditingController _partnerPhoneController = TextEditingController();
   bool _isLoading = false;
-  bool _invitationSent = false;
+  SyncPhase _phase = SyncPhase.input;
   late final AnimationController _pulseController;
 
   @override
@@ -1205,33 +1207,57 @@ class _PartnerSyncViewState extends State<_PartnerSyncView> with SingleTickerPro
     if (_partnerPhoneController.text.length != 10) return;
     
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
     setState(() {
       _isLoading = false;
-      _invitationSent = true;
+      _phase = SyncPhase.splash;
     });
+
+    // Automatically transition to the dashboard
+    await Future.delayed(const Duration(seconds: 3));
+    if (mounted) {
+      setState(() => _phase = SyncPhase.synced);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return CelestialBackground(
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(28.0),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 600),
-            switchInCurve: Curves.fastEaseInToSlowEaseOut,
-            switchOutCurve: Curves.fastEaseInToSlowEaseOut,
-            child: _invitationSent ? _buildSentState() : _buildInputState(),
-          ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 1000),
+          switchInCurve: Curves.fastEaseInToSlowEaseOut,
+          switchOutCurve: Curves.fastEaseInToSlowEaseOut,
+          child: _buildCurrentPhase(),
         ),
       ),
     );
   }
 
+  Widget _buildCurrentPhase() {
+    switch (_phase) {
+      case SyncPhase.input:
+        return Padding(
+          key: const ValueKey('input'),
+          padding: const EdgeInsets.all(28.0),
+          child: _buildInputState(),
+        );
+      case SyncPhase.splash:
+        return Padding(
+          key: const ValueKey('splash'),
+          padding: const EdgeInsets.all(28.0),
+          child: _buildSplashState(),
+        );
+      case SyncPhase.synced:
+        return KeyedSubtree(
+          key: const ValueKey('synced'),
+          child: _buildSyncedState(),
+        );
+    }
+  }
+
   Widget _buildInputState() {
     return Column(
-      key: const ValueKey('input'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -1286,9 +1312,8 @@ class _PartnerSyncViewState extends State<_PartnerSyncView> with SingleTickerPro
     );
   }
 
-  Widget _buildSentState() {
+  Widget _buildSplashState() {
     return Column(
-      key: const ValueKey('sent'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -1300,7 +1325,6 @@ class _PartnerSyncViewState extends State<_PartnerSyncView> with SingleTickerPro
               return Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Outer glowing ripple
                   Container(
                     width: 140 + (_pulseController.value * 20),
                     height: 140 + (_pulseController.value * 20),
@@ -1312,7 +1336,6 @@ class _PartnerSyncViewState extends State<_PartnerSyncView> with SingleTickerPro
                       ),
                     ),
                   ),
-                  // Inner pulse core
                   Container(
                     width: 100,
                     height: 100,
@@ -1336,13 +1359,13 @@ class _PartnerSyncViewState extends State<_PartnerSyncView> with SingleTickerPro
         ),
         const SizedBox(height: 48),
         Text(
-          'Cosmic Alignment\nPending...',
+          'Cosmic Alignment\nComplete',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 28),
         ),
         const SizedBox(height: 16),
         Text(
-          "An invitation has been sent to +91 ${_partnerPhoneController.text}. Once they join, your charts will automatically sync and generate personalized insights.",
+          "Unlocking your shared relationship dashboard...",
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontSize: 16,
@@ -1350,22 +1373,196 @@ class _PartnerSyncViewState extends State<_PartnerSyncView> with SingleTickerPro
               ),
         ),
         const Spacer(),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: TextButton(
-            onPressed: () {
-              setState(() {
-                 _invitationSent = false;
-                 _partnerPhoneController.clear();
-              });
-            },
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: const Text('Cancel Request', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.bold, fontSize: 16)),
+      ],
+    );
+  }
+
+  Widget _buildSyncedState() {
+    return CustomScrollView(
+      slivers: [
+         SliverToBoxAdapter(
+           child: Padding(
+             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+             child: Column(
+               children: [
+                 const SizedBox(height: 16),
+                 Text('RELATIONSHIP HUB', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: AppColors.textPrimary.withValues(alpha: 0.6))),
+                 const SizedBox(height: 24),
+                 // Avatars & Score
+                 Row(
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   children: [
+                      _buildAvatar('You', AppColors.primary),
+                      Transform.translate(
+                        offset: const Offset(-20, 0),
+                        child: _buildAvatar('Emily', const Color(0xFFDEA080)),
+                      ),
+                   ],
+                 ),
+                 const SizedBox(height: 12),
+                 const Text('COMPOSITE HARMONY', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.5, color: AppColors.textMuted)),
+                 const SizedBox(height: 4),
+                 const Text('92%', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: AppColors.primary)),
+               ]
+             )
+           )
+         ),
+         
+         // Partner Chat / WhatsApp Sync Action
+         SliverToBoxAdapter(
+           child: Padding(
+             padding: const EdgeInsets.symmetric(horizontal: 16),
+             child: GestureDetector(
+               onTap: () {
+                  Navigator.push(context, PageRouteBuilder(
+                    pageBuilder: (context, anim1, anim2) => const _PartnerChatPage(),
+                    transitionsBuilder: (context, anim1, anim2, child) => FadeTransition(opacity: anim1, child: child),
+                    transitionDuration: const Duration(milliseconds: 300),
+                  ));
+               },
+               child: Container(
+                 padding: const EdgeInsets.all(16),
+                 decoration: BoxDecoration(
+                   color: AppColors.elevated,
+                   borderRadius: BorderRadius.circular(16),
+                   border: Border.all(color: const Color(0xFF788B7A).withValues(alpha: 0.3)),
+                 ),
+                 child: Row(
+                   children: [
+                     Container(
+                       padding: const EdgeInsets.all(10),
+                       decoration: BoxDecoration(
+                         color: const Color(0xFF788B7A).withValues(alpha: 0.15),
+                         shape: BoxShape.circle,
+                       ),
+                       child: const Icon(Icons.forum_rounded, color: Color(0xFF788B7A), size: 20),
+                     ),
+                     const SizedBox(width: 16),
+                     const Expanded(
+                       child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+                           Text('Partner AI Chat', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                           SizedBox(height: 4),
+                           Text('Sync WhatsApp to analyze real-time relationship metrics.', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                         ]
+                       ),
+                     ),
+                     const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+                   ],
+                 ),
+               ),
+             ),
+           )
+         ),
+
+         // Daily Insight
+         SliverToBoxAdapter(
+           child: Padding(
+             padding: const EdgeInsets.all(16.0),
+             child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary.withValues(alpha: 0.08), AppColors.surface],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.15))
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                       children: [
+                         Icon(Icons.auto_awesome, color: AppColors.primary, size: 16),
+                         SizedBox(width: 8),
+                         Text('SHARED DAILY INSIGHT', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2, color: AppColors.primary)),
+                       ]
+                    ),
+                    SizedBox(height: 12),
+                    Text('Venus is transiting your shared 7th house today. A perfect evening for vulnerability and deep conversation. Prioritize quality time tonight.', style: TextStyle(fontSize: 14, height: 1.5, color: AppColors.textPrimary)),
+                  ]
+                )
+             )
+           )
+         ),
+
+         // Grid of Dynamics
+         SliverPadding(
+           padding: const EdgeInsets.symmetric(horizontal: 16),
+           sliver: SliverGrid.count(
+             crossAxisCount: 2,
+             childAspectRatio: 1.25,
+             mainAxisSpacing: 12,
+             crossAxisSpacing: 12,
+             children: [
+               _buildGridMetricTile('Communication', '94%', Icons.chat_bubble_outline_rounded, const Color(0xFF8784B4)),
+               _buildGridMetricTile('Intimacy', '82%', Icons.favorite_border_rounded, const Color(0xFFDEA080)),
+               _buildGridMetricTile('Trust', '90%', Icons.shield_outlined, const Color(0xFF788B7A)),
+               _buildGridMetricTile('Growth', '75%', Icons.park_outlined, const Color(0xFFE7AD5D)),
+             ]
+           )
+         ),
+         
+         const SliverToBoxAdapter(child: SizedBox(height: 48)),
+      ]
+    );
+  }
+
+  Widget _buildAvatar(String name, Color color) {
+    return Column(
+      children: [
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color.withValues(alpha: 0.2),
+            border: Border.all(color: color, width: 2),
+            boxShadow: [
+               BoxShadow(color: AppColors.background, spreadRadius: 2), // Creates the cutout overlap effect
+            ]
+          ),
+          child: Center(
+            child: Icon(Icons.person, color: color, size: 28),
           ),
         ),
-      ],
+        const SizedBox(height: 8),
+        Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+      ]
+    );
+  }
+
+  Widget _buildGridMetricTile(String title, String score, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.elevated,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 16),
+              ),
+              Text(score, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: color)),
+            ]
+          ),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.textPrimary, letterSpacing: 0.5)),
+        ]
+      )
     );
   }
 }
@@ -2443,4 +2640,181 @@ class _InfluenceCardData {
     required this.score,
   });
 }
+
+// ─────────────────────────────────────────────
+// Partner Chat Page (AI Synced)
+// ─────────────────────────────────────────────
+
+class _PartnerChatPage extends StatefulWidget {
+  const _PartnerChatPage();
+
+  @override
+  State<_PartnerChatPage> createState() => _PartnerChatPageState();
+}
+
+class _PartnerChatPageState extends State<_PartnerChatPage> {
+  final TextEditingController _msgController = TextEditingController();
+  final List<String> _messages = [
+    "Hey, what did the AI say about us today? 😂"
+  ];
+
+  void _showWhatsAppExportDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Sync WhatsApp Chat', style: TextStyle(color: AppColors.textPrimary)),
+        content: const Text(
+          'Export your chat from WhatsApp (without media) and upload the .txt file here to get real-time AI relationship insights based on your conversation history.',
+          style: TextStyle(color: AppColors.textSecondary, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+             onPressed: () => Navigator.pop(context),
+             child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+          ),
+          ElevatedButton(
+             onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Working: WhatsApp sync analyzing...')));
+             },
+             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+             child: const Text('Upload .txt export', style: TextStyle(color: Colors.white)),
+          )
+        ]
+      )
+    );
+  }
+
+  void _send() {
+    if (_msgController.text.trim().isEmpty) return;
+    setState(() {
+       _messages.add(_msgController.text.trim());
+       _msgController.clear();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+     return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+           backgroundColor: AppColors.surface,
+           elevation: 0,
+           iconTheme: const IconThemeData(color: AppColors.textPrimary),
+           title: const Row(
+             children: [
+                CircleAvatar(
+                   backgroundColor: Color(0xFFDEA080),
+                   radius: 16,
+                   child: Icon(Icons.person, color: Colors.white, size: 16),
+                ),
+                SizedBox(width: 8),
+                Text('Emily & You', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+             ]
+           ),
+           actions: [
+             IconButton(
+               icon: const Icon(Icons.psychology_rounded, color: AppColors.primary),
+               tooltip: 'Ask AI',
+               onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('AI is analyzing your tone...')));
+               },
+             ),
+             PopupMenuButton<String>(
+               icon: const Icon(Icons.more_vert, color: AppColors.textPrimary),
+               color: AppColors.elevated,
+               itemBuilder: (context) => [
+                 const PopupMenuItem(
+                   value: 'export',
+                   child: Text('Sync from WhatsApp', style: TextStyle(color: AppColors.textPrimary)),
+                 )
+               ],
+               onSelected: (val) {
+                 if (val == 'export') {
+                    _showWhatsAppExportDialog();
+                 }
+               }
+             )
+           ]
+        ),
+        body: Column(
+          children: [
+             Expanded(
+               child: ListView.builder(
+                 padding: const EdgeInsets.all(16),
+                 itemCount: _messages.length,
+                 itemBuilder: (context, i) {
+                    final isMe = i > 0;
+                    return Align(
+                       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                       child: Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                             color: isMe ? AppColors.primary : AppColors.elevated,
+                             borderRadius: BorderRadius.circular(16).copyWith(
+                                bottomRight: isMe ? const Radius.circular(4) : null,
+                                bottomLeft: isMe ? null : const Radius.circular(4),
+                             )
+                          ),
+                          child: Text(_messages[i], style: TextStyle(color: isMe ? Colors.white : AppColors.textPrimary)),
+                       )
+                    );
+                 }
+               )
+             ),
+             Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12).copyWith(bottom: 24),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border(top: BorderSide(color: AppColors.secondary.withValues(alpha: 0.1))),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: Row(
+                    children: [
+                       IconButton(
+                          icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.textSecondary),
+                          onPressed: () {},
+                       ),
+                       Expanded(
+                          child: TextField(
+                             controller: _msgController,
+                             style: const TextStyle(color: AppColors.textPrimary),
+                             decoration: InputDecoration(
+                                hintText: 'Message...',
+                                hintStyle: const TextStyle(color: AppColors.textSecondary),
+                                filled: true,
+                                fillColor: AppColors.elevated,
+                                border: OutlineInputBorder(
+                                   borderRadius: BorderRadius.circular(24),
+                                   borderSide: BorderSide.none,
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                             ),
+                             onSubmitted: (_) => _send(),
+                          )
+                       ),
+                       const SizedBox(width: 4),
+                       Container(
+                         decoration: const BoxDecoration(
+                           color: AppColors.primary,
+                           shape: BoxShape.circle,
+                         ),
+                         child: IconButton(
+                            icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                            onPressed: _send,
+                         ),
+                       ),
+                    ]
+                  ),
+                )
+             )
+          ]
+        )
+     );
+  }
+}
+
 
