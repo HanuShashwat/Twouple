@@ -197,8 +197,8 @@ class _DashboardViewState extends State<_DashboardView> {
       padding: const EdgeInsets.only(top: 16),
       child: TweenAnimationBuilder<double>(
         tween: Tween<double>(begin: 0.0, end: 1.0),
-        duration: const Duration(milliseconds: 1400),
-        curve: Curves.easeOutCubic,
+        duration: const Duration(milliseconds: 850),
+        curve: Curves.fastEaseInToSlowEaseOut,
         builder: (context, animValue, _) {
           final animatedSpots = spots.map((e) => FlSpot(e.x, e.y * animValue)).toList();
           return LineChart(
@@ -360,21 +360,21 @@ class _DashboardViewState extends State<_DashboardView> {
                             //   page 0 (past)   = slides in from left
                             //   page 1 (future) = slides in from right
                             child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 450),
-                              switchInCurve: Curves.easeOutCubic,
-                              switchOutCurve: Curves.easeInCubic,
+                              duration: const Duration(milliseconds: 550),
+                              reverseDuration: const Duration(milliseconds: 180),
+                              switchInCurve: Curves.fastEaseInToSlowEaseOut,
+                              switchOutCurve: Curves.easeIn,
                               transitionBuilder: (child, animation) {
-                                // The child's key tells us which chart it is
                                 final isPage0 = (child.key == const ValueKey(0));
                                 final beginOffset = isPage0
-                                    ? const Offset(-0.25, 0) // past slides in from left
-                                    : const Offset(0.25, 0);  // future slides in from right
+                                    ? const Offset(-0.18, 0)
+                                    : const Offset(0.18, 0);
                                 final slideAnim = Tween<Offset>(
                                   begin: beginOffset,
                                   end: Offset.zero,
                                 ).animate(CurvedAnimation(
                                   parent: animation,
-                                  curve: Curves.easeOutCubic,
+                                  curve: Curves.fastEaseInToSlowEaseOut,
                                 ));
                                 return FadeTransition(
                                   opacity: animation,
