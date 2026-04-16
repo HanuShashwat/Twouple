@@ -24,8 +24,8 @@ class _HomePageState extends State<HomePage> {
         index: _currentIndex,
         children: const [
           _DashboardView(),
-          _AIAssistantView(),
           _PartnerSyncView(),
+          _AIAssistantView(),
           _MoreView(),
         ],
       ),
@@ -46,14 +46,14 @@ class _HomePageState extends State<HomePage> {
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.auto_awesome_outlined, color: AppColors.textSecondary),
-            selectedIcon: Icon(Icons.auto_awesome, color: AppColors.primary),
-            label: 'AI Coach',
-          ),
-          NavigationDestination(
             icon: Icon(Icons.people_outline_rounded, color: AppColors.textSecondary),
             selectedIcon: Icon(Icons.people_rounded, color: AppColors.primary),
             label: 'Sync',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.auto_awesome_outlined, color: AppColors.textSecondary),
+            selectedIcon: Icon(Icons.auto_awesome, color: AppColors.primary),
+            label: 'AI Coach',
           ),
           NavigationDestination(
             icon: Icon(Icons.menu_rounded, color: AppColors.textSecondary),
