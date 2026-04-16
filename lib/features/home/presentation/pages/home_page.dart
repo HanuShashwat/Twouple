@@ -86,10 +86,21 @@ class _DashboardViewState extends State<_DashboardView> {
   final PageController _chartPageController = PageController(initialPage: 1);
   DateTime _selectedDate = DateTime.now();
 
-  final List<String> _userDoItems = [];
-  final List<bool> _userDoChecked = [];
-  final List<String> _userAvoidItems = [];
-  final List<bool> _userAvoidChecked = [];
+  int? _expandedInfluenceIdx;
+
+  final List<String> _userDoItems = [
+    'Schedule important conversations',
+    'Make financial decisions before 3 PM',
+    "Reach out to someone you've been distant from",
+  ];
+  final List<bool> _userDoChecked = [false, false, false];
+  
+  final List<String> _userAvoidItems = [
+    'Avoid reactive decisions after 6 PM',
+    "Don't sign contracts without reading twice",
+    'Skip high-intensity workouts — rest is better today',
+  ];
+  final List<bool> _userAvoidChecked = [false, false, false];
 
   bool _isAddingDo = false;
   bool _isAddingAvoid = false;
@@ -529,9 +540,6 @@ class _DashboardViewState extends State<_DashboardView> {
   // ── Today's Influences ──────────────────────────────────────────────────
 
   // Checklist state: tracked by index
-  final List<bool> _doChecked  = [false, false, false];
-  final List<bool> _avoidChecked = [false, false, false];
-
   // Deterministic score 40-99 from date + seed string
   int _score(String seed) {
     final h = (_selectedDate.day * 17 + _selectedDate.month * 31 + seed.hashCode).abs();
@@ -589,18 +597,6 @@ class _DashboardViewState extends State<_DashboardView> {
     final peakLabel = '${peakStart > 12 ? peakStart - 12 : peakStart}${peakStart >= 12 ? 'PM' : 'AM'}'
         ' – ${peakEnd > 12 ? peakEnd - 12 : peakEnd}${peakEnd >= 12 ? 'PM' : 'AM'}';
 
-    // ── Do / Avoid lists ─────────────────────────────────────────────────
-    final doItems = [
-      'Schedule important conversations',
-      'Make financial decisions before 3 PM',
-      "Reach out to someone you've been distant from",
-    ];
-    final avoidItems = [
-      'Avoid reactive decisions after 6 PM',
-      "Don't sign contracts without reading twice",
-      'Skip high-intensity workouts — rest is better today',
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -626,6 +622,16 @@ class _DashboardViewState extends State<_DashboardView> {
               return _InteractiveInfluenceCard(
                  card: cards[i],
                  isLast: i == cards.length - 1,
+                 isExpanded: _expandedInfluenceIdx == i,
+                 onTap: () {
+                    setState(() {
+                       if (_expandedInfluenceIdx == i) {
+                          _expandedInfluenceIdx = null;
+                       } else {
+                          _expandedInfluenceIdx = i;
+                       }
+                    });
+                 },
               );
             },
           ),
@@ -671,17 +677,28 @@ class _DashboardViewState extends State<_DashboardView> {
           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.4, color: AppColors.textMuted),
         ),
         const SizedBox(height: 8),
-        ...List.generate(doItems.length, (i) => _buildCheckItem(
-          doItems[i],
-          _doChecked[i],
-          const Color(0xFF788B7A),
-          () => setState(() => _doChecked[i] = !_doChecked[i]),
-        )),
-        ...List.generate(_userDoItems.length, (i) => _buildCheckItem(
-          _userDoItems[i],
-          _userDoChecked[i],
-          const Color(0xFF788B7A),
-          () => setState(() => _userDoChecked[i] = !_userDoChecked[i]),
+        ...List.generate(_userDoItems.length, (i) => Dismissible(
+          key: ValueKey('do_${_userDoItems[i]}_$i'),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 20),
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(color: AppColors.error, borderRadius: BorderRadius.circular(12)),
+            child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+          ),
+          onDismissed: (_) {
+            setState(() {
+              _userDoItems.removeAt(i);
+              _userDoChecked.removeAt(i);
+            });
+          },
+          child: _buildCheckItem(
+            _userDoItems[i],
+            _userDoChecked[i],
+            const Color(0xFF788B7A),
+            () => setState(() => _userDoChecked[i] = !_userDoChecked[i]),
+          ),
         )),
         _buildCustomAddInput('Do', _isAddingDo, _customDoController, const Color(0xFF788B7A), () => setState(() => _isAddingDo = true), (val) {
            if (val.trim().isNotEmpty) {
@@ -703,19 +720,29 @@ class _DashboardViewState extends State<_DashboardView> {
           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.4, color: AppColors.textMuted),
         ),
         const SizedBox(height: 8),
-        ...List.generate(avoidItems.length, (i) => _buildCheckItem(
-          avoidItems[i],
-          _avoidChecked[i],
-          const Color(0xFFDEA080),
-          () => setState(() => _avoidChecked[i] = !_avoidChecked[i]),
-          isWarning: true,
-        )),
-        ...List.generate(_userAvoidItems.length, (i) => _buildCheckItem(
-          _userAvoidItems[i],
-          _userAvoidChecked[i],
-          const Color(0xFFDEA080),
-          () => setState(() => _userAvoidChecked[i] = !_userAvoidChecked[i]),
-          isWarning: true,
+        ...List.generate(_userAvoidItems.length, (i) => Dismissible(
+          key: ValueKey('avoid_${_userAvoidItems[i]}_$i'),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 20),
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(color: AppColors.error, borderRadius: BorderRadius.circular(12)),
+            child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+          ),
+          onDismissed: (_) {
+            setState(() {
+              _userAvoidItems.removeAt(i);
+              _userAvoidChecked.removeAt(i);
+            });
+          },
+          child: _buildCheckItem(
+            _userAvoidItems[i],
+            _userAvoidChecked[i],
+            const Color(0xFFDEA080),
+            () => setState(() => _userAvoidChecked[i] = !_userAvoidChecked[i]),
+            isWarning: true,
+          ),
         )),
         _buildCustomAddInput('Avoid', _isAddingAvoid, _customAvoidController, const Color(0xFFDEA080), () => setState(() => _isAddingAvoid = true), (val) {
            if (val.trim().isNotEmpty) {
@@ -2908,36 +2935,33 @@ class _InteractiveMetricTileState extends State<_InteractiveMetricTile> {
   }
 }
 
-class _InteractiveInfluenceCard extends StatefulWidget {
+class _InteractiveInfluenceCard extends StatelessWidget {
   final _InfluenceCardData card;
   final bool isLast;
-  const _InteractiveInfluenceCard({required this.card, required this.isLast});
+  final bool isExpanded;
+  final VoidCallback onTap;
 
-  @override
-  State<_InteractiveInfluenceCard> createState() => _InteractiveInfluenceCardState();
-}
-
-class _InteractiveInfluenceCardState extends State<_InteractiveInfluenceCard> {
-  bool _isExpanded = false;
+  const _InteractiveInfluenceCard({
+    required this.card, 
+    required this.isLast,
+    required this.isExpanded,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _isExpanded = !_isExpanded;
-        });
-      },
+      onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 500),
         curve: Curves.fastEaseInToSlowEaseOut,
-        width: _isExpanded ? 240 : 140,
-        margin: EdgeInsets.only(right: widget.isLast ? 0 : 10),
+        width: isExpanded ? 240 : 140,
+        margin: EdgeInsets.only(right: isLast ? 0 : 10),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: _isExpanded ? widget.card.color.withValues(alpha: 0.05) : AppColors.elevated,
+          color: isExpanded ? card.color.withValues(alpha: 0.05) : AppColors.elevated,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: widget.card.color.withValues(alpha: _isExpanded ? 0.4 : 0.2)),
+          border: Border.all(color: card.color.withValues(alpha: isExpanded ? 0.4 : 0.2)),
         ),
         child: SingleChildScrollView(
           physics: const NeverScrollableScrollPhysics(),
@@ -2950,25 +2974,25 @@ class _InteractiveInfluenceCardState extends State<_InteractiveInfluenceCard> {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: widget.card.color.withValues(alpha: 0.15),
+                      color: card.color.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(widget.card.icon, color: widget.card.color, size: 16),
+                    child: Icon(card.icon, color: card.color, size: 16),
                   ),
                   const Spacer(),
                   Text(
-                    '${widget.card.score}',
+                    '${card.score}',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
-                      color: widget.card.color,
+                      color: card.color,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
-                widget.card.label,
+                card.label,
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
@@ -2981,21 +3005,21 @@ class _InteractiveInfluenceCardState extends State<_InteractiveInfluenceCard> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
                 child: TweenAnimationBuilder<double>(
-                  tween: Tween<double>(begin: 0, end: widget.card.score / 100),
+                  tween: Tween<double>(begin: 0, end: card.score / 100),
                   duration: const Duration(milliseconds: 900),
                   curve: Curves.fastEaseInToSlowEaseOut,
                   builder: (context, val, _) => LinearProgressIndicator(
                     value: val,
                     minHeight: 5,
-                    backgroundColor: widget.card.color.withValues(alpha: 0.12),
-                    valueColor: AlwaysStoppedAnimation<Color>(widget.card.color),
+                    backgroundColor: card.color.withValues(alpha: 0.12),
+                    valueColor: AlwaysStoppedAnimation<Color>(card.color),
                   ),
                 ),
               ),
               const SizedBox(height: 10),
               // Planet
               Text(
-                widget.card.planet,
+                card.planet,
                 style: const TextStyle(
                   fontSize: 10,
                   color: AppColors.textMuted,
@@ -3007,7 +3031,7 @@ class _InteractiveInfluenceCardState extends State<_InteractiveInfluenceCard> {
               AnimatedCrossFade(
                 duration: const Duration(milliseconds: 300),
                 firstChild: Text(
-                  widget.card.tip,
+                  card.tip,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -3018,7 +3042,7 @@ class _InteractiveInfluenceCardState extends State<_InteractiveInfluenceCard> {
                   ),
                 ),
                 secondChild: Text(
-                  widget.card.tip,
+                  card.tip,
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textPrimary,
@@ -3026,7 +3050,7 @@ class _InteractiveInfluenceCardState extends State<_InteractiveInfluenceCard> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
               ),
             ],
           ),
