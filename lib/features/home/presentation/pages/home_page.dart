@@ -280,8 +280,7 @@ class _DashboardViewState extends State<_DashboardView> {
                 ),
               ],
             ),
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.easeOutCubic,
+            duration: Duration.zero,
           );
         }
       ),
@@ -320,79 +319,76 @@ class _DashboardViewState extends State<_DashboardView> {
               ];
     
               return Center(
-                child: Hero(
-                  tag: 'energy_trend_hero',
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      height: 400,
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.05),
-                            blurRadius: 32,
-                            spreadRadius: 8,
-                          )
-                        ]
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                currentChartPage == 0 ? 'Energy Trend (Previous Week)' : 'Energy Trend (Upcoming Week)', 
-                                style: const TextStyle(fontWeight: FontWeight.bold)
-                              ),
-                              const Spacer(),
-                              const Icon(Icons.swipe_rounded, size: 16, color: AppColors.textSecondary),
-                            ],
-                          ),
-                          Expanded(
-                            child: GestureDetector(
-                              onHorizontalDragEnd: (details) {
-                                if (details.primaryVelocity! > 0 && currentChartPage == 1) {
-                                  setState(() => currentChartPage = 0); 
-                                } else if (details.primaryVelocity! < 0 && currentChartPage == 0) {
-                                  setState(() => currentChartPage = 1); 
-                                }
-                              },
-                              child: currentChartPage == 0 
-                                  ? _buildLineChartWidget(pastSpots, _getDaysMap(true))
-                                  : _buildLineChartWidget(futureSpots, _getDaysMap(false)),
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    height: 400,
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.background,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.05),
+                          blurRadius: 32,
+                          spreadRadius: 8,
+                        )
+                      ]
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              currentChartPage == 0 ? 'Energy Trend (Previous Week)' : 'Energy Trend (Upcoming Week)', 
+                              style: const TextStyle(fontWeight: FontWeight.bold)
                             ),
+                            const Spacer(),
+                            const Icon(Icons.swipe_rounded, size: 16, color: AppColors.textSecondary),
+                          ],
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onHorizontalDragEnd: (details) {
+                              if (details.primaryVelocity! > 0 && currentChartPage == 1) {
+                                setState(() => currentChartPage = 0); 
+                              } else if (details.primaryVelocity! < 0 && currentChartPage == 0) {
+                                setState(() => currentChartPage = 1); 
+                              }
+                            },
+                            child: currentChartPage == 0 
+                                ? _buildLineChartWidget(pastSpots, _getDaysMap(true))
+                                : _buildLineChartWidget(futureSpots, _getDaysMap(false)),
                           ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                width: currentChartPage == 0 ? 8 : 6, 
-                                height: 6, 
-                                decoration: BoxDecoration(
-                                  color: currentChartPage == 0 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
-                                  borderRadius: BorderRadius.circular(6)
-                                )
-                              ),
-                              const SizedBox(width: 8),
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                width: currentChartPage == 1 ? 8 : 6, 
-                                height: 6, 
-                                decoration: BoxDecoration(
-                                  color: currentChartPage == 1 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
-                                  borderRadius: BorderRadius.circular(6)
-                                )
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: currentChartPage == 0 ? 8 : 6, 
+                              height: 6, 
+                              decoration: BoxDecoration(
+                                color: currentChartPage == 0 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
+                                borderRadius: BorderRadius.circular(6)
+                              )
+                            ),
+                            const SizedBox(width: 8),
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: currentChartPage == 1 ? 8 : 6, 
+                              height: 6, 
+                              decoration: BoxDecoration(
+                                color: currentChartPage == 1 ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3), 
+                                borderRadius: BorderRadius.circular(6)
+                              )
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -697,51 +693,45 @@ class _DashboardViewState extends State<_DashboardView> {
                    ),
                    const SizedBox(width: 12),
                    Expanded(
-                     child: Hero(
-                       tag: 'energy_trend_hero',
-                       child: Material(
-                         color: Colors.transparent,
-                         child: GestureDetector(
-                           onTap: () => _openGraphPopup(context),
-                           child: Container(
-                             height: 120,
-                             padding: const EdgeInsets.all(16),
-                             decoration: BoxDecoration(
-                               gradient: const LinearGradient(
-                                 colors: [AppColors.surface, AppColors.elevated],
-                                 begin: Alignment.topLeft,
-                                 end: Alignment.bottomRight,
+                      child: GestureDetector(
+                        onTap: () => _openGraphPopup(context),
+                        child: Container(
+                          height: 120,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppColors.surface, AppColors.elevated],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
+                          ),
+                          child: const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('ENERGY\nTREND', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.2, color: AppColors.textPrimary)),
+                                    Icon(Icons.chevron_right, color: AppColors.textPrimary, size: 16),
+                                  ]
                                ),
-                               borderRadius: BorderRadius.circular(16),
-                               border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
-                             ),
-                             child: const Column(
-                               crossAxisAlignment: CrossAxisAlignment.start,
-                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                               children: [
-                                   Row(
-                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                     children: [
-                                       Text('ENERGY\nTREND', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.2, color: AppColors.textPrimary)),
-                                       Icon(Icons.chevron_right, color: AppColors.textPrimary, size: 16),
-                                     ]
-                                  ),
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                                    textBaseline: TextBaseline.alphabetic,
-                                    children: [
-                                      Text('8.2', style: const TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.bold, fontSize: 24)),
-                                      const SizedBox(width: 8),
-                                      const Text('HIGH', style: TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.w900, fontSize: 12)),
-                                    ]
-                                  )
-                               ]
-                             ),
-                           ),
-                         ),
-                       ),
-                     ),
-                   )
+                               Row(
+                                 crossAxisAlignment: CrossAxisAlignment.baseline,
+                                 textBaseline: TextBaseline.alphabetic,
+                                 children: [
+                                   Text('8.2', style: const TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.bold, fontSize: 24)),
+                                   const SizedBox(width: 8),
+                                   const Text('HIGH', style: TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.w900, fontSize: 12)),
+                                 ]
+                               )
+                            ]
+                          ),
+                        ),
+                      ),
+                    )
                 ]
               ),
               const SizedBox(height: 32),
