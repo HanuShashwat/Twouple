@@ -27,110 +27,231 @@ class _CelestialDoodlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final primaryPaint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.09)
+      ..color = AppColors.primary.withValues(alpha: 0.10)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
     final accentPaint = Paint()
-      ..color = const Color(0xFF8784B4).withValues(alpha: 0.08)
+      ..color = const Color(0xFF8784B4).withValues(alpha: 0.09)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
     final dotPaint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.10)
+      ..color = AppColors.primary.withValues(alpha: 0.11)
       ..style = PaintingStyle.fill;
 
     final goldenPaint = Paint()
-      ..color = const Color(0xFFE7AD5D).withValues(alpha: 0.09)
+      ..color = const Color(0xFFE7AD5D).withValues(alpha: 0.10)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    final rosePaint = Paint()
+      ..color = const Color(0xFFDEA080).withValues(alpha: 0.09)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
     final w = size.width;
     final h = size.height;
 
-    // ------------------------------------------------------------------
-    // 1. Scattered tiny 6-point stars
-    // ------------------------------------------------------------------
-    final starPositions = [
-      Offset(w * 0.08, h * 0.04),
-      Offset(w * 0.85, h * 0.06),
-      Offset(w * 0.92, h * 0.18),
-      Offset(w * 0.05, h * 0.25),
-      Offset(w * 0.55, h * 0.12),
-      Offset(w * 0.72, h * 0.35),
-      Offset(w * 0.15, h * 0.50),
-      Offset(w * 0.88, h * 0.55),
-      Offset(w * 0.40, h * 0.68),
-      Offset(w * 0.10, h * 0.78),
-      Offset(w * 0.65, h * 0.82),
-      Offset(w * 0.30, h * 0.90),
-      Offset(w * 0.80, h * 0.92),
-      Offset(w * 0.50, h * 0.44),
-      Offset(w * 0.95, h * 0.72),
-    ];
+    // We divide the page into a 6-column × 12-row virtual grid.
+    // Each cell is ~(w/6) × (h/12). Elements are placed at deterministic
+    // offsets within each cell so coverage is even top-to-bottom, left-to-right.
 
-    for (int i = 0; i < starPositions.length; i++) {
-      final p = starPositions[i];
-      final r = (i % 3 == 0) ? 7.0 : (i % 3 == 1) ? 5.0 : 9.0;
-      _drawStar(canvas, p, r, i % 2 == 0 ? primaryPaint : goldenPaint);
+    // ── Helper: cell centre with small nudge ──────────────────────────────────
+    Offset cell(int col, int row, {double dx = 0.5, double dy = 0.5}) {
+      return Offset(
+        w * (col + dx) / 6.0,
+        h * (row + dy) / 12.0,
+      );
     }
 
-    // ------------------------------------------------------------------
-    // 2. Crescent moons
-    // ------------------------------------------------------------------
-    _drawCrescent(canvas, Offset(w * 0.93, h * 0.10), 14, primaryPaint);
-    _drawCrescent(canvas, Offset(w * 0.06, h * 0.62), 10, accentPaint);
-    _drawCrescent(canvas, Offset(w * 0.78, h * 0.75), 12, primaryPaint);
-
-    // ------------------------------------------------------------------
-    // 3. Small sun bursts (circle with radiating lines)
-    // ------------------------------------------------------------------
-    _drawSunburst(canvas, Offset(w * 0.20, h * 0.08), 10, goldenPaint);
-    _drawSunburst(canvas, Offset(w * 0.78, h * 0.20), 8, goldenPaint);
-    _drawSunburst(canvas, Offset(w * 0.12, h * 0.88), 9, goldenPaint);
-    _drawSunburst(canvas, Offset(w * 0.88, h * 0.88), 11, goldenPaint);
-
-    // ------------------------------------------------------------------
-    // 4. Orbital / dotted circles
-    // ------------------------------------------------------------------
-    _drawDashedCircle(canvas, Offset(w * 0.85, h * 0.30), 28, accentPaint);
-    _drawDashedCircle(canvas, Offset(w * 0.18, h * 0.38), 22, primaryPaint);
-    _drawDashedCircle(canvas, Offset(w * 0.60, h * 0.94), 26, accentPaint);
-
-    // ------------------------------------------------------------------
-    // 5. Tiny constellation-style dot clusters
-    // ------------------------------------------------------------------
-    final clusters = [
-      [Offset(w * 0.30, h * 0.15), Offset(w * 0.34, h * 0.13), Offset(w * 0.37, h * 0.16)],
-      [Offset(w * 0.60, h * 0.30), Offset(w * 0.63, h * 0.27), Offset(w * 0.66, h * 0.31), Offset(w * 0.64, h * 0.34)],
-      [Offset(w * 0.20, h * 0.70), Offset(w * 0.23, h * 0.67), Offset(w * 0.26, h * 0.71)],
-      [Offset(w * 0.70, h * 0.60), Offset(w * 0.74, h * 0.58), Offset(w * 0.77, h * 0.62), Offset(w * 0.73, h * 0.65)],
-      [Offset(w * 0.45, h * 0.85), Offset(w * 0.48, h * 0.83), Offset(w * 0.50, h * 0.87)],
+    // ── 1. Stars ─────────────────────────────────────────────────────────────
+    // 30 stars: 5 per row across 6 vertical bands (rows 0-11 every 2.4 rows)
+    const starCells = [
+      [0, 0], [1, 1], [2, 0], [3, 1], [4, 0], [5, 1],  // row-band 0-1
+      [0, 2], [1, 3], [2, 2], [3, 3], [4, 2], [5, 3],  // row-band 2-3
+      [0, 4], [1, 5], [2, 4], [3, 5], [4, 4], [5, 5],  // row-band 4-5
+      [0, 6], [1, 7], [2, 6], [3, 7], [4, 6], [5, 7],  // row-band 6-7
+      [0, 8], [1, 9], [2, 8], [3, 9], [4, 8], [5, 9],  // row-band 8-9
+      [0,10], [1,11], [2,10], [3,11], [4,10], [5,11],  // row-band 10-11
     ];
 
-    for (final cluster in clusters) {
-      _drawConstellation(canvas, cluster, dotPaint, primaryPaint);
+    const starDx = [0.2, 0.8, 0.5, 0.15, 0.85, 0.4,
+                    0.7, 0.3, 0.9, 0.1, 0.6, 0.25,
+                    0.45, 0.75, 0.15, 0.8, 0.35, 0.65,
+                    0.1, 0.55, 0.9, 0.2, 0.7, 0.4,
+                    0.85, 0.3, 0.6, 0.05, 0.75, 0.5,
+                    0.3, 0.7, 0.2, 0.8, 0.45, 0.6];
+
+    const starDy = [0.3, 0.7, 0.5, 0.2, 0.8, 0.4,
+                    0.6, 0.3, 0.7, 0.5, 0.2, 0.8,
+                    0.4, 0.7, 0.3, 0.6, 0.8, 0.2,
+                    0.5, 0.3, 0.7, 0.8, 0.2, 0.6,
+                    0.3, 0.7, 0.4, 0.6, 0.2, 0.8,
+                    0.6, 0.2, 0.8, 0.4, 0.7, 0.3];
+
+    const starSizes = [7.0, 5.0, 9.0, 6.0, 8.0, 5.0,
+                       7.0, 6.0, 8.0, 5.0, 9.0, 6.0,
+                       5.0, 8.0, 7.0, 6.0, 9.0, 5.0,
+                       8.0, 6.0, 5.0, 7.0, 9.0, 6.0,
+                       5.0, 8.0, 6.0, 9.0, 7.0, 5.0,
+                       6.0, 8.0, 5.0, 9.0, 7.0, 6.0];
+
+    for (int i = 0; i < starCells.length; i++) {
+      final c = starCells[i];
+      final pos = cell(c[0], c[1], dx: starDx[i], dy: starDy[i]);
+      _drawStar(canvas, pos, starSizes[i], i % 2 == 0 ? primaryPaint : goldenPaint);
     }
 
-    // ------------------------------------------------------------------
-    // 6. Diamond / rhombus ornaments (like the reference's corner diamonds)
-    // ------------------------------------------------------------------
-    _drawDiamond(canvas, Offset(w * 0.04, h * 0.04), 10, primaryPaint);
-    _drawDiamond(canvas, Offset(w * 0.96, h * 0.04), 10, primaryPaint);
-    _drawDiamond(canvas, Offset(w * 0.04, h * 0.96), 8, accentPaint);
-    _drawDiamond(canvas, Offset(w * 0.96, h * 0.96), 8, accentPaint);
-
-    // ------------------------------------------------------------------
-    // 7. Cross / plus tick marks (celestial reference marks)
-    // ------------------------------------------------------------------
-    final tickPositions = [
-      Offset(w * 0.45, h * 0.05),
-      Offset(w * 0.50, h * 0.58),
-      Offset(w * 0.35, h * 0.78),
-      Offset(w * 0.82, h * 0.48),
+    // ── 2. Crescent moons ─────────────────────────────────────────────────────
+    // 12 crescents, 1 per column per 2 vertical bands
+    final crescents = [
+      (cell(0, 0,  dx: 0.7, dy: 0.6), 11.0, primaryPaint),
+      (cell(1, 2,  dx: 0.3, dy: 0.3), 10.0, accentPaint),
+      (cell(2, 4,  dx: 0.8, dy: 0.5), 13.0, primaryPaint),
+      (cell(3, 6,  dx: 0.2, dy: 0.7), 10.0, rosePaint),
+      (cell(4, 8,  dx: 0.7, dy: 0.4), 12.0, accentPaint),
+      (cell(5, 10, dx: 0.3, dy: 0.6), 11.0, primaryPaint),
+      (cell(0, 5,  dx: 0.5, dy: 0.2), 10.0, accentPaint),
+      (cell(1, 7,  dx: 0.8, dy: 0.8), 12.0, primaryPaint),
+      (cell(2, 9,  dx: 0.2, dy: 0.3), 10.0, rosePaint),
+      (cell(3, 1,  dx: 0.7, dy: 0.7), 11.0, goldenPaint),
+      (cell(4, 3,  dx: 0.3, dy: 0.4), 10.0, primaryPaint),
+      (cell(5, 5,  dx: 0.8, dy: 0.3), 13.0, accentPaint),
     ];
-    for (final p in tickPositions) {
-      _drawCrossTick(canvas, p, 6, accentPaint);
+    for (final c in crescents) {
+      _drawCrescent(canvas, c.$1, c.$2, c.$3);
+    }
+
+    // ── 3. Sunbursts ─────────────────────────────────────────────────────────
+    // 12 sunbursts
+    final sunbursts = [
+      (cell(0, 1,  dx: 0.3, dy: 0.8), 10.0),
+      (cell(1, 3,  dx: 0.7, dy: 0.2), 8.0),
+      (cell(2, 5,  dx: 0.2, dy: 0.7), 11.0),
+      (cell(3, 7,  dx: 0.8, dy: 0.3), 9.0),
+      (cell(4, 9,  dx: 0.3, dy: 0.6), 10.0),
+      (cell(5, 11, dx: 0.7, dy: 0.2), 8.0),
+      (cell(0, 6,  dx: 0.8, dy: 0.5), 9.0),
+      (cell(1, 8,  dx: 0.2, dy: 0.8), 11.0),
+      (cell(2, 10, dx: 0.7, dy: 0.4), 8.0),
+      (cell(3, 0,  dx: 0.5, dy: 0.8), 10.0),
+      (cell(4, 2,  dx: 0.8, dy: 0.5), 9.0),
+      (cell(5, 4,  dx: 0.2, dy: 0.3), 11.0),
+    ];
+    for (int i = 0; i < sunbursts.length; i++) {
+      final s = sunbursts[i];
+      _drawSunburst(canvas, s.$1, s.$2, i % 2 == 0 ? goldenPaint : rosePaint);
+    }
+
+    // ── 4. Dashed orbital circles ─────────────────────────────────────────────
+    // 10 dashed circles spread across the full height
+    final dashCircles = [
+      (cell(0, 2,  dx: 0.6, dy: 0.5), 20.0, accentPaint),
+      (cell(1, 5,  dx: 0.4, dy: 0.5), 24.0, primaryPaint),
+      (cell(2, 8,  dx: 0.7, dy: 0.5), 18.0, accentPaint),
+      (cell(3, 11, dx: 0.3, dy: 0.4), 22.0, rosePaint),
+      (cell(4, 1,  dx: 0.5, dy: 0.7), 26.0, primaryPaint),
+      (cell(5, 4,  dx: 0.6, dy: 0.4), 20.0, accentPaint),
+      (cell(0, 7,  dx: 0.4, dy: 0.6), 28.0, primaryPaint),
+      (cell(2, 3,  dx: 0.3, dy: 0.8), 22.0, goldenPaint),
+      (cell(4, 6,  dx: 0.7, dy: 0.3), 18.0, rosePaint),
+      (cell(5, 9,  dx: 0.4, dy: 0.7), 24.0, accentPaint),
+    ];
+    for (final c in dashCircles) {
+      _drawDashedCircle(canvas, c.$1, c.$2, c.$3);
+    }
+
+    // ── 5. Constellation dot clusters ────────────────────────────────────────
+    // 10 clusters spread across all vertical bands
+    final clusterAnchors = [
+      cell(0, 0,  dx: 0.4, dy: 0.9),
+      cell(1, 2,  dx: 0.6, dy: 0.4),
+      cell(2, 4,  dx: 0.3, dy: 0.6),
+      cell(3, 6,  dx: 0.7, dy: 0.3),
+      cell(4, 8,  dx: 0.2, dy: 0.7),
+      cell(5, 10, dx: 0.5, dy: 0.5),
+      cell(0, 9,  dx: 0.7, dy: 0.3),
+      cell(2, 7,  dx: 0.5, dy: 0.8),
+      cell(4, 5,  dx: 0.3, dy: 0.2),
+      cell(3, 3,  dx: 0.6, dy: 0.7),
+    ];
+
+    for (int i = 0; i < clusterAnchors.length; i++) {
+      final a = clusterAnchors[i];
+      final pts = i % 2 == 0
+          ? [a, a + const Offset(14, -8), a + const Offset(26, -4), a + const Offset(20, 10)]
+          : [a, a + const Offset(12, 6), a + const Offset(22, -2)];
+      _drawConstellation(canvas, pts, dotPaint, i % 2 == 0 ? primaryPaint : accentPaint);
+    }
+
+    // ── 6. Diamond ornaments ─────────────────────────────────────────────────
+    // 16 diamonds: 4 corners + 12 spread across all rows
+    final diamonds = [
+      // Corners
+      (cell(0, 0, dx: 0.1, dy: 0.1), 10.0, primaryPaint),
+      (cell(5, 0, dx: 0.9, dy: 0.1), 10.0, primaryPaint),
+      (cell(0, 11, dx: 0.1, dy: 0.9), 8.0, accentPaint),
+      (cell(5, 11, dx: 0.9, dy: 0.9), 8.0, accentPaint),
+      // Mid spread
+      (cell(1, 1,  dx: 0.5, dy: 0.5), 7.0, rosePaint),
+      (cell(2, 3,  dx: 0.5, dy: 0.5), 8.0, primaryPaint),
+      (cell(3, 5,  dx: 0.5, dy: 0.5), 7.0, accentPaint),
+      (cell(4, 7,  dx: 0.5, dy: 0.5), 9.0, goldenPaint),
+      (cell(5, 9,  dx: 0.5, dy: 0.5), 7.0, primaryPaint),
+      (cell(0, 4,  dx: 0.5, dy: 0.5), 8.0, rosePaint),
+      (cell(1, 6,  dx: 0.5, dy: 0.5), 7.0, accentPaint),
+      (cell(2, 8,  dx: 0.5, dy: 0.5), 9.0, primaryPaint),
+      (cell(3, 10, dx: 0.5, dy: 0.5), 7.0, goldenPaint),
+      (cell(4, 11, dx: 0.5, dy: 0.3), 8.0, accentPaint),
+      (cell(1, 10, dx: 0.7, dy: 0.6), 7.0, rosePaint),
+      (cell(5, 2,  dx: 0.3, dy: 0.7), 8.0, primaryPaint),
+    ];
+    for (final d in diamonds) {
+      _drawDiamond(canvas, d.$1, d.$2, d.$3);
+    }
+
+    // ── 7. Cross tick marks ──────────────────────────────────────────────────
+    // 16 ticks — 2 per 3 columns per vertical sweep
+    final ticks = [
+      cell(0, 1,  dx: 0.8, dy: 0.4),
+      cell(1, 2,  dx: 0.2, dy: 0.8),
+      cell(2, 3,  dx: 0.6, dy: 0.2),
+      cell(3, 4,  dx: 0.4, dy: 0.8),
+      cell(4, 5,  dx: 0.2, dy: 0.3),
+      cell(5, 6,  dx: 0.7, dy: 0.7),
+      cell(0, 7,  dx: 0.6, dy: 0.2),
+      cell(1, 8,  dx: 0.3, dy: 0.6),
+      cell(2, 9,  dx: 0.8, dy: 0.4),
+      cell(3, 10, dx: 0.2, dy: 0.7),
+      cell(4, 11, dx: 0.6, dy: 0.3),
+      cell(5, 0,  dx: 0.4, dy: 0.7),
+      cell(0, 3,  dx: 0.7, dy: 0.6),
+      cell(2, 6,  dx: 0.3, dy: 0.4),
+      cell(4, 0,  dx: 0.5, dy: 0.8),
+      cell(3, 2,  dx: 0.8, dy: 0.3),
+    ];
+    for (int i = 0; i < ticks.length; i++) {
+      _drawCrossTick(canvas, ticks[i], 5.5, i % 2 == 0 ? accentPaint : primaryPaint);
+    }
+
+    // ── 8. Small dot fills (extra texture) ───────────────────────────────────
+    // 20 tiny filled circles spread uniformly
+    const dotPositions = [
+      [0.12, 0.05], [0.38, 0.09], [0.62, 0.03], [0.87, 0.07],
+      [0.25, 0.17], [0.50, 0.22], [0.75, 0.15], [0.05, 0.28],
+      [0.42, 0.33], [0.68, 0.38], [0.93, 0.42], [0.18, 0.47],
+      [0.55, 0.52], [0.80, 0.57], [0.08, 0.63], [0.35, 0.68],
+      [0.60, 0.73], [0.88, 0.78], [0.22, 0.84], [0.50, 0.88],
+      [0.72, 0.93], [0.14, 0.96], [0.45, 0.99], [0.90, 0.95],
+    ];
+    for (int i = 0; i < dotPositions.length; i++) {
+      final dp = dotPositions[i];
+      canvas.drawCircle(
+        Offset(w * dp[0], h * dp[1]),
+        i % 3 == 0 ? 2.5 : 1.8,
+        dotPaint,
+      );
     }
   }
 
@@ -160,7 +281,7 @@ class _CelestialDoodlePainter extends CustomPainter {
           radius: radius * 0.78));
     final crescent = Path.combine(PathOperation.difference, outerPath, innerPath);
     canvas.drawPath(crescent, paint..style = PaintingStyle.fill);
-    paint.style = PaintingStyle.stroke; // reset
+    paint.style = PaintingStyle.stroke;
   }
 
   void _drawSunburst(Canvas canvas, Offset center, double radius, Paint paint) {
