@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/widgets/celestial_background.dart';
 
 class DailyInsightPage extends StatefulWidget {
   const DailyInsightPage({super.key});
@@ -52,19 +53,7 @@ class _DailyInsightPageState extends State<DailyInsightPage> {
             tag: 'insight_card',
             child: Material(
               color: Colors.transparent,
-              child: Container(
-                width: double.infinity,
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary.withValues(alpha: 0.15),
-                      AppColors.background,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
+              child: CelestialBackground(
                 child: SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
