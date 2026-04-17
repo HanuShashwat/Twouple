@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> {
           NavigationDestination(
             icon: Icon(Icons.auto_awesome_outlined, color: AppColors.textSecondary),
             selectedIcon: Icon(Icons.auto_awesome, color: AppColors.primary),
-            label: 'AI Coach',
+            label: 'Guru',
           ),
           NavigationDestination(
             icon: Icon(Icons.menu_rounded, color: AppColors.textSecondary),
