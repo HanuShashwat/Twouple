@@ -52,7 +52,7 @@ class _DailyInsightPageState extends State<DailyInsightPage> {
           Hero(
             tag: 'insight_card',
             child: Material(
-              color: Colors.transparent,
+              color: AppColors.background,
               child: CelestialBackground(
                 child: SafeArea(
                   child: Padding(
