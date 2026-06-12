@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/auth/token_manager.dart';
+import '../../../../api/user_api.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -17,8 +19,25 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   Future<void> _navigateToNext() async {
-    // Simulate checking a token
-    await Future.delayed(const Duration(seconds: 2));
+    final token = await TokenManager.getToken();
+    if (token != null && token.isNotEmpty) {
+      try {
+        final userApi = UserApi();
+        final profile = await userApi.getCurrentUser();
+        if (mounted) {
+          if (profile.fullName == null || profile.fullName!.isEmpty) {
+            context.go('/onboarding/birth');
+          } else {
+            context.go('/home');
+          }
+        }
+        return;
+      } catch (e) {
+        // Token invalid or network error
+        await TokenManager.deleteToken();
+      }
+    }
+
     if (mounted) {
       context.go('/landing');
     }

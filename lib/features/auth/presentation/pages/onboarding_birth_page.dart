@@ -10,6 +10,7 @@ import '../bloc/auth_event.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../api/user_api.dart';
 
 class OnboardingBirthPage extends StatefulWidget {
   const OnboardingBirthPage({super.key});
@@ -44,7 +45,20 @@ class _OnboardingBirthPageState extends State<OnboardingBirthPage> {
     }
     
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1)); // Simulate save
+    try {
+      final userApi = UserApi();
+      await userApi.updateProfile({
+        'full_name': _nameController.text.trim(),
+        'dob': _dobController.text.trim(),
+        'time_of_birth': _tobController.text.trim(),
+        'place_of_birth': _searchController.text.trim(),
+        'latitude': _selectedLocation.latitude,
+        'longitude': _selectedLocation.longitude,
+      });
+    } catch (e) {
+      // Handle error gracefully if needed
+      debugPrint('Failed to update profile: $e');
+    }
     setState(() => _isLoading = false);
 
     if (mounted) {
