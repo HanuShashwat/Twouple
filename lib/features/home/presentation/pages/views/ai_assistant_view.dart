@@ -1,16 +1,29 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/widgets/celestial_background.dart';
-
-class AIAssistantView extends StatefulWidget {
-  const AIAssistantView();
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../chat/presentation/bloc/chat_bloc.dart';
+import '../../../../chat/data/chat_repository.dart';
+class AIAssistantView extends StatelessWidget {
+  const AIAssistantView({super.key});
 
   @override
-  State<AIAssistantView> createState() => AIAssistantViewState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => ChatBloc(ChatRepository()), // Load history if needed
+      child: const _AIAssistantContent(),
+    );
+  }
 }
 
+class _AIAssistantContent extends StatefulWidget {
+  const _AIAssistantContent();
 
-class AIAssistantViewState extends State<AIAssistantView>
+  @override
+  State<_AIAssistantContent> createState() => AIAssistantViewState();
+}
+
+class AIAssistantViewState extends State<_AIAssistantContent>
     with TickerProviderStateMixin {
   final TextEditingController _promptController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -19,22 +32,12 @@ class AIAssistantViewState extends State<AIAssistantView>
   bool _isTyping = false;
   AnimationController? _pulseController;
 
-  // ── Greeting ──────────────────────────────────────────────────────────────
   String get _greeting {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   }
-
-  // ── Mock responses ────────────────────────────────────────────────────────
-  static const List<String> _mockResponses = [
-    'The stars suggest a moment of pause before you react. Mercury retrograde is softening your usual clarity — give it a day before any major decisions with your partner. 🌿',
-    'Venus is forming a beautiful trine with your natal Moon right now. This is one of the most emotionally receptive windows of the month. Tonight, open up — even just a little. ✨',
-    'Your composite chart shows Saturn sitting firmly in the 7th house. This creates beautiful longevity, but can bring periods of emotional distance. Patience is your superpower here. 🪐',
-    'Mars in your 5th house is lighting up creativity and passion — use that energy to plan something unexpected together. A small, thoughtful gesture will land powerfully tonight. 🔥',
-    'The lunar cycle is in its waning phase, a time for release and reflection rather than initiation. Try not to force breakthroughs right now — let things settle naturally. 🌙',
-  ];
 
   static const List<Map<String, String>> _suggestionChips = [
     {'icon': '✨', 'label': 'Why do we keep clashing?'},
@@ -44,7 +47,6 @@ class AIAssistantViewState extends State<AIAssistantView>
     {'icon': '🔮', 'label': 'Read my partner\'s energy'},
   ];
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
   @override
   void initState() {
     super.initState();
@@ -53,7 +55,6 @@ class AIAssistantViewState extends State<AIAssistantView>
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
 
-    // Pre-load the greeting as the first AI message
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _addAIMessage(
         '$_greeting ✨ I\'ve been watching the skies for you. '
@@ -74,7 +75,6 @@ class AIAssistantViewState extends State<AIAssistantView>
     super.dispose();
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
   void _addAIMessage(String text) {
     final ctrl = AnimationController(
       vsync: this,
@@ -105,15 +105,14 @@ class AIAssistantViewState extends State<AIAssistantView>
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
     _promptController.clear();
+    
     _addUserMessage(trimmed);
 
     setState(() => _isTyping = true);
-    await Future.delayed(const Duration(milliseconds: 1800));
-    setState(() => _isTyping = false);
-
-    final response =
-        _mockResponses[trimmed.length % _mockResponses.length];
-    _addAIMessage(response);
+    
+    if (mounted) {
+      context.read<ChatBloc>().add(SendMessageEvent(trimmed));
+    }
   }
 
   void _scrollToBottom() {
@@ -128,28 +127,44 @@ class AIAssistantViewState extends State<AIAssistantView>
     });
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return CelestialBackground(
-      child: Container(
-        color: Colors.transparent,
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(child: _buildChatList()),
-              _buildTypingIndicator(),
-              _buildSuggestionChips(),
-              _buildInputBar(),
-            ],
+    return BlocListener<ChatBloc, ChatState>(
+      listener: (context, state) {
+        if (state is ChatLoaded) {
+          if (state.messages.isNotEmpty) {
+            final latestMsg = state.messages.first;
+            if (latestMsg.senderId != 'me' && _isTyping) {
+              setState(() => _isTyping = false);
+              _addAIMessage(latestMsg.messageBody);
+            } else if (latestMsg.senderId == 'me' && _isTyping) {
+              // message sent successfully
+            }
+          }
+        } else if (state is ChatError) {
+           setState(() => _isTyping = false);
+           _addAIMessage("Sorry, I encountered an error: ${state.error}");
+        }
+      },
+      child: CelestialBackground(
+        child: Container(
+          color: Colors.transparent,
+          child: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(child: _buildChatList()),
+                _buildTypingIndicator(),
+                _buildSuggestionChips(),
+                _buildInputBar(),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // ── Header ────────────────────────────────────────────────────────────────
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

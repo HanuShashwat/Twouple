@@ -3,6 +3,7 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/widgets/custom_button.dart';
 import '../../../../../core/widgets/custom_text_field.dart';
 import '../../../../../core/widgets/celestial_background.dart';
+import '../../../../../api/relationship_api.dart';
 import 'partner_chat_page.dart';
 
 class PartnerSyncView extends StatefulWidget {
@@ -38,16 +39,27 @@ class PartnerSyncViewState extends State<PartnerSyncView> with SingleTickerProvi
     if (_partnerPhoneController.text.length != 10) return;
     
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      _isLoading = false;
-      _phase = SyncPhase.splash;
-    });
+    try {
+      final relationshipApi = RelationshipApi();
+      await relationshipApi.invitePartner(_partnerPhoneController.text);
+      
+      setState(() {
+        _isLoading = false;
+        _phase = SyncPhase.splash;
+      });
 
-    // Automatically transition to the dashboard
-    await Future.delayed(const Duration(seconds: 3));
-    if (mounted) {
-      setState(() => _phase = SyncPhase.synced);
+      // Automatically transition to the dashboard
+      await Future.delayed(const Duration(seconds: 3));
+      if (mounted) {
+        setState(() => _phase = SyncPhase.synced);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to invite partner: $e')),
+        );
+      }
     }
   }
 
@@ -225,4 +237,3 @@ class PartnerSyncViewState extends State<PartnerSyncView> with SingleTickerProvi
 
 
 enum SyncPhase { input, splash, synced }
-
