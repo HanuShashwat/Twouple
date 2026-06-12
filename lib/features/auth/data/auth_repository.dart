@@ -1,22 +1,20 @@
 import 'models/user_model.dart';
+import '../../../../api/auth_api.dart';
 
 class AuthRepository {
+  final AuthApi _authApi;
+
+  AuthRepository({AuthApi? authApi}) : _authApi = authApi ?? AuthApi();
+
   Future<void> sendOtp(String phone) async {
-    // Mock API call delay
-    await Future.delayed(const Duration(seconds: 1));
+    final success = await _authApi.requestOtp(phone);
+    if (!success) {
+      throw Exception('Failed to send OTP');
+    }
   }
 
   Future<UserModel> verifyOtp(String phone, String otp) async {
-    // Mock API call delay
-    await Future.delayed(const Duration(seconds: 1));
-    if (otp == '123456') {
-      return UserModel(
-        id: 'user_123',
-        name: 'Demo User',
-        phone: phone,
-      );
-    } else {
-      throw Exception('Invalid OTP');
-    }
+    final result = await _authApi.verifyOtp(phone, otp);
+    return result['user'] as UserModel;
   }
 }
