@@ -25,7 +25,7 @@ class _AuthPageState extends State<AuthPage> {
   }
 
   void _verifyOtp() {
-    if (_otpController.text.length != 6) return;
+    if (_otpController.text.length != 4) return;
     context.read<AuthBloc>().add(VerifyOtpEvent(_phoneController.text, _otpController.text));
   }
 
@@ -144,7 +144,7 @@ class _AuthPageState extends State<AuthPage> {
         ),
         const SizedBox(height: 12),
         Text(
-          'Enter your phone number to receive a secure 6-digit verification code.',
+          'Enter your phone number to receive a secure 4-digit verification code.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 16, height: 1.4),
         ),
         const SizedBox(height: 40),
@@ -184,8 +184,8 @@ class _AuthPageState extends State<AuthPage> {
         ),
         const SizedBox(height: 40),
         CustomTextField(
-          label: '6-digit OTP',
-          hint: '123456',
+          label: '4-digit OTP',
+          hint: '1234',
           controller: _otpController,
           keyboardType: TextInputType.number,
         ),
