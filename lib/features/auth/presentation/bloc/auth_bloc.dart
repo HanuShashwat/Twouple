@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/auth_repository.dart';
-import '../../data/models/user_model.dart';
+import '../../../../models/user_model.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -39,8 +39,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final currentUser = (state as AuthAuthenticated).user;
       final updatedUser = UserModel(
         id: currentUser.id,
-        name: event.newName,
-        phone: currentUser.phone,
+        fullName: event.newName,
+        phoneNumber: currentUser.phoneNumber,
+        isPremium: currentUser.isPremium,
       );
       emit(AuthAuthenticated(updatedUser));
     }
