@@ -5,16 +5,31 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/widgets/custom_button.dart';
 import '../../../../../core/widgets/custom_text_field.dart';
 import '../../../../../core/widgets/celestial_background.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../bloc/dashboard_bloc.dart';
+import '../../../../../models/daily_insight_model.dart';
 
-class DashboardView extends StatefulWidget {
-  const DashboardView();
+class DashboardView extends StatelessWidget {
+  const DashboardView({super.key});
 
   @override
-  State<DashboardView> createState() => DashboardViewState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => DashboardBloc()..add(LoadDashboardEvent(DateTime.now())),
+      child: const _DashboardContent(),
+    );
+  }
+}
+
+class _DashboardContent extends StatefulWidget {
+  const _DashboardContent({super.key});
+
+  @override
+  State<_DashboardContent> createState() => _DashboardContentState();
 }
 
 
-class DashboardViewState extends State<DashboardView> {
+class _DashboardContentState extends State<_DashboardContent> {
   final TextEditingController _promptController = TextEditingController();
   final PageController _chartPageController = PageController(initialPage: 1);
   DateTime _selectedDate = DateTime.now();
@@ -62,7 +77,17 @@ class DashboardViewState extends State<DashboardView> {
     return '${selected.day} ${months[selected.month - 1]}';
   }
 
-  int _getRingValue(String type, DateTime date) {
+  void _onDateChanged(DateTime newDate) {
+    setState(() => _selectedDate = newDate);
+    context.read<DashboardBloc>().add(LoadDashboardEvent(newDate));
+  }
+
+  int _getRingValue(String type, DateTime date, InsightDashboardModel? data) {
+    if (data != null) {
+      if (type == 'energy') return data.insight.energyScore;
+      if (type == 'logic') return data.insight.logicScore;
+      if (type == 'career') return data.insight.careerScore;
+    }
     int hash = date.day + date.month * 31 + date.year + type.hashCode;
     return (hash % 60) + 40;
   }
@@ -426,7 +451,7 @@ class DashboardViewState extends State<DashboardView> {
     );
   }
 
-  void _openSyncPopup(BuildContext context) {
+  void _openSyncPopup(BuildContext context, InsightDashboardModel? dashboardData) {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -450,11 +475,11 @@ class DashboardViewState extends State<DashboardView> {
                 ]
               ),
               const SizedBox(height: 24),
-              _buildSyncBar('Communication', _getRingValue("comm", _selectedDate), const Color(0xFF8784B4), Icons.chat_bubble_outline),
+              _buildSyncBar('Communication', _getRingValue("comm", _selectedDate, dashboardData), const Color(0xFF8784B4), Icons.chat_bubble_outline),
               const SizedBox(height: 16),
-              _buildSyncBar('Intimacy', _getRingValue("intimacy", _selectedDate), const Color(0xFFDEA080), Icons.favorite_border),
+              _buildSyncBar('Intimacy', _getRingValue("intimacy", _selectedDate, dashboardData), const Color(0xFFDEA080), Icons.favorite_border),
               const SizedBox(height: 16),
-              _buildSyncBar('Patience', _getRingValue("patience", _selectedDate), const Color(0xFF788B7A), Icons.self_improvement),
+              _buildSyncBar('Patience', _getRingValue("patience", _selectedDate, dashboardData), const Color(0xFF788B7A), Icons.self_improvement),
                const SizedBox(height: 24),
               Align(
                 alignment: Alignment.centerRight,
@@ -474,12 +499,17 @@ class DashboardViewState extends State<DashboardView> {
 
   // Checklist state: tracked by index
   // Deterministic score 40-99 from date + seed string
-  int _score(String seed) {
+  int _score(String seed, InsightDashboardModel? data) {
+    if (data != null) {
+      if (seed == 'love') return data.insight.energyScore;
+      if (seed == 'career') return data.insight.careerScore;
+      if (seed == 'mindset') return data.insight.logicScore;
+    }
     final h = (_selectedDate.day * 17 + _selectedDate.month * 31 + seed.hashCode).abs();
     return (h % 60) + 40;
   }
 
-  Widget _buildInfluencesSection() {
+  Widget _buildInfluencesSection(InsightDashboardModel? data) {
     // ── 5 influence cards ─────────────────────────────────────────────────
     final cards = [
       InfluenceCardData(
@@ -488,7 +518,7 @@ class DashboardViewState extends State<DashboardView> {
         color: const Color(0xFFDEA080),
         planet: 'Venus trine Moon',
         tip: "Express something you've been holding back.",
-        score: _score('love'),
+        score: _score('love', data),
       ),
       InfluenceCardData(
         label: 'CAREER',
@@ -496,7 +526,7 @@ class DashboardViewState extends State<DashboardView> {
         color: const Color(0xFF788B7A),
         planet: 'Sun sextile Saturn',
         tip: 'Ideal for pitching ideas to authority figures.',
-        score: _score('career'),
+        score: _score('career', data),
       ),
       InfluenceCardData(
         label: 'HEALTH',
@@ -504,7 +534,7 @@ class DashboardViewState extends State<DashboardView> {
         color: const Color(0xFF8784B4),
         planet: 'Mars in 6th house',
         tip: 'Physical activity will feel especially rewarding.',
-        score: _score('health'),
+        score: _score('health', data),
       ),
       InfluenceCardData(
         label: 'MINDSET',
@@ -512,7 +542,7 @@ class DashboardViewState extends State<DashboardView> {
         color: const Color(0xFFE7AD5D),
         planet: 'Mercury sextile Jupiter',
         tip: 'Your mind is sharp — tackle complex problems now.',
-        score: _score('mindset'),
+        score: _score('mindset', data),
       ),
       InfluenceCardData(
         label: 'TIMING',
@@ -520,15 +550,20 @@ class DashboardViewState extends State<DashboardView> {
         color: AppColors.primary,
         planet: 'Moon in 10th house',
         tip: 'Afternoon energies peak. Morning is for planning.',
-        score: _score('timing'),
+        score: _score('timing', data),
       ),
     ];
 
     // ── Peak window ───────────────────────────────────────────────────────
-    final peakStart = 9 + (_score('peak') % 5); // 9–13
-    final peakEnd   = peakStart + 3;
-    final peakLabel = '${peakStart > 12 ? peakStart - 12 : peakStart}${peakStart >= 12 ? 'PM' : 'AM'}'
-        ' – ${peakEnd > 12 ? peakEnd - 12 : peakEnd}${peakEnd >= 12 ? 'PM' : 'AM'}';
+    String peakLabel;
+    if (data != null && data.insight.peakWindowStart != null && data.insight.peakWindowEnd != null) {
+       peakLabel = '${data.insight.peakWindowStart} - ${data.insight.peakWindowEnd}';
+    } else {
+      final peakStart = 9 + (_score('peak', data) % 5); // 9–13
+      final peakEnd   = peakStart + 3;
+      peakLabel = '${peakStart > 12 ? peakStart - 12 : peakStart}${peakStart >= 12 ? 'PM' : 'AM'}'
+          ' – ${peakEnd > 12 ? peakEnd - 12 : peakEnd}${peakEnd >= 12 ? 'PM' : 'AM'}';
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -610,6 +645,26 @@ class DashboardViewState extends State<DashboardView> {
           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.4, color: AppColors.textMuted),
         ),
         const SizedBox(height: 8),
+        if (data != null)
+          ...data.tasks.where((t) => t.type == 'do').map((t) => Dismissible(
+            key: ValueKey(t.id),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 20),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(color: AppColors.error, borderRadius: BorderRadius.circular(12)),
+              child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+            ),
+            onDismissed: (_) {},
+            child: _buildCheckItem(
+              t.taskText,
+              t.isCompleted,
+              const Color(0xFF788B7A),
+              () => context.read<DashboardBloc>().add(ToggleTaskEvent(t.id)),
+            ),
+          ))
+        else
         ...List.generate(_userDoItems.length, (i) => Dismissible(
           key: ValueKey('do_${_userDoItems[i]}_$i'),
           direction: DismissDirection.endToStart,
@@ -635,10 +690,7 @@ class DashboardViewState extends State<DashboardView> {
         )),
         _buildCustomAddInput('Do', _isAddingDo, _customDoController, const Color(0xFF788B7A), () => setState(() => _isAddingDo = true), (val) {
            if (val.trim().isNotEmpty) {
-             setState(() {
-                _userDoItems.add(val.trim());
-                _userDoChecked.add(false);
-             });
+             context.read<DashboardBloc>().add(AddCustomTaskEvent('do', val.trim(), _selectedDate));
            }
            setState(() {
              _isAddingDo = false;
@@ -653,6 +705,27 @@ class DashboardViewState extends State<DashboardView> {
           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.4, color: AppColors.textMuted),
         ),
         const SizedBox(height: 8),
+        if (data != null)
+          ...data.tasks.where((t) => t.type == 'avoid').map((t) => Dismissible(
+            key: ValueKey(t.id),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 20),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(color: AppColors.error, borderRadius: BorderRadius.circular(12)),
+              child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+            ),
+            onDismissed: (_) {},
+            child: _buildCheckItem(
+              t.taskText,
+              t.isCompleted,
+              const Color(0xFFDEA080),
+              () => context.read<DashboardBloc>().add(ToggleTaskEvent(t.id)),
+              isWarning: true,
+            ),
+          ))
+        else
         ...List.generate(_userAvoidItems.length, (i) => Dismissible(
           key: ValueKey('avoid_${_userAvoidItems[i]}_$i'),
           direction: DismissDirection.endToStart,
@@ -679,10 +752,7 @@ class DashboardViewState extends State<DashboardView> {
         )),
         _buildCustomAddInput('Avoid', _isAddingAvoid, _customAvoidController, const Color(0xFFDEA080), () => setState(() => _isAddingAvoid = true), (val) {
            if (val.trim().isNotEmpty) {
-             setState(() {
-                _userAvoidItems.add(val.trim());
-                _userAvoidChecked.add(false);
-             });
+             context.read<DashboardBloc>().add(AddCustomTaskEvent('avoid', val.trim(), _selectedDate));
            }
            setState(() {
              _isAddingAvoid = false;
@@ -795,7 +865,14 @@ class DashboardViewState extends State<DashboardView> {
 
   @override
   Widget build(BuildContext context) {
-    return CelestialBackground(
+    return BlocBuilder<DashboardBloc, DashboardState>(
+      builder: (context, state) {
+        InsightDashboardModel? dashboardData;
+        if (state is DashboardLoaded) {
+          dashboardData = state.data;
+        }
+
+        return CelestialBackground(
       child: Container(
       decoration: const BoxDecoration(
         color: Colors.transparent,
@@ -849,9 +926,9 @@ class DashboardViewState extends State<DashboardView> {
                      },
                      onHorizontalDragEnd: (details) {
                         if (details.primaryVelocity! > 0) {
-                           setState(() => _selectedDate = _selectedDate.subtract(const Duration(days: 1)));
+                           _onDateChanged(_selectedDate.subtract(const Duration(days: 1)));
                         } else if (details.primaryVelocity! < 0) {
-                           setState(() => _selectedDate = _selectedDate.add(const Duration(days: 1)));
+                           _onDateChanged(_selectedDate.add(const Duration(days: 1)));
                         }
                      },
                      child: AnimatedContainer(
@@ -898,7 +975,7 @@ class DashboardViewState extends State<DashboardView> {
                      children: [
                        AnimatedSwitcher(
                          duration: const Duration(milliseconds: 300),
-                         child: Text('${_getRingValue("score", _selectedDate)}%', key: ValueKey(_selectedDate), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                         child: Text('${_getRingValue("score", _selectedDate, dashboardData)}%', key: ValueKey(_selectedDate), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                        ),
                        const SizedBox(width: 4),
                        const Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
@@ -918,18 +995,18 @@ class DashboardViewState extends State<DashboardView> {
               GestureDetector(
                 onHorizontalDragEnd: (details) {
                   if (details.primaryVelocity! > 0) {
-                     setState(() => _selectedDate = _selectedDate.subtract(const Duration(days: 1)));
+                     _onDateChanged(_selectedDate.subtract(const Duration(days: 1)));
                   } else if (details.primaryVelocity! < 0) {
-                     setState(() => _selectedDate = _selectedDate.add(const Duration(days: 1)));
+                     _onDateChanged(_selectedDate.add(const Duration(days: 1)));
                   }
                 },
                 child: Row(
                   key: ValueKey(_selectedDate),
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildRing('ENERGY', _getRingValue('energy', _selectedDate), const Color(0xFFE7AD5D), 'Physical drive based on Sun aspect.'),
-                    _buildRing('LOGIC', _getRingValue('logic', _selectedDate), const Color(0xFF8784B4), 'Rational speed (Mercury in 3rd House).'),
-                    _buildRing('CAREER', _getRingValue('career', _selectedDate), const Color(0xFF788B7A), 'Material goals (Midheaven aspect).'),
+                    _buildRing('ENERGY', _getRingValue('energy', _selectedDate, dashboardData), const Color(0xFFE7AD5D), 'Physical drive based on Sun aspect.'),
+                    _buildRing('LOGIC', _getRingValue('logic', _selectedDate, dashboardData), const Color(0xFF8784B4), 'Rational speed (Mercury in 3rd House).'),
+                    _buildRing('CAREER', _getRingValue('career', _selectedDate, dashboardData), const Color(0xFF788B7A), 'Material goals (Midheaven aspect).'),
                   ],
                 ),
               ),
@@ -940,7 +1017,7 @@ class DashboardViewState extends State<DashboardView> {
                 children: [
                    Expanded(
                      child: GestureDetector(
-                       onTap: () => _openSyncPopup(context),
+                       onTap: () => _openSyncPopup(context, dashboardData),
                        child: Container(
                          height: 120,
                          padding: const EdgeInsets.all(16),
@@ -968,9 +1045,9 @@ class DashboardViewState extends State<DashboardView> {
                                 crossAxisAlignment: CrossAxisAlignment.baseline,
                                 textBaseline: TextBaseline.alphabetic,
                                 children: [
-                                  Text('${_getRingValue("sync", _selectedDate)}%', style: const TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.bold, fontSize: 24)),
+                                  Text('${_getRingValue("sync", _selectedDate, dashboardData)}%', style: const TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.bold, fontSize: 24)),
                                   const SizedBox(width: 8),
-                                  Text(_getRingValue("sync", _selectedDate) > 65 ? 'STRONG' : 'FAIR', style: const TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.w900, fontSize: 12)),
+                                  Text(_getRingValue("sync", _selectedDate, dashboardData) > 65 ? 'STRONG' : 'FAIR', style: const TextStyle(color: Color(0xFFDEA080), fontWeight: FontWeight.w900, fontSize: 12)),
                                 ]
                               )
                            ]
@@ -1031,13 +1108,15 @@ class DashboardViewState extends State<DashboardView> {
               const AnimatedOutlookCard(),
               const SizedBox(height: 24),
 
-              _buildInfluencesSection(),
+              _buildInfluencesSection(dashboardData),
               const SizedBox(height: 48),
             ],
           ),
         ),
       ),
       ),
+    );
+      },
     );
   }
 }
