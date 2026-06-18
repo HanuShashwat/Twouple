@@ -4,12 +4,20 @@ import '../auth/token_manager.dart';
 import 'api_exceptions.dart';
 
 class ApiClient {
+  // ⚠️ IMPORTANT: Update this to your machine's local network IP.
+  // Find it by running `ipconfig` (Windows) or `ifconfig` (Mac/Linux).
+  // This IP must be accessible from your phone/emulator on the same Wi-Fi.
+  static const String _devServerIp = '192.168.29.16';
+
   static String get baseUrl {
     if (kIsWeb) {
       return 'http://localhost:3000/api/v1';
     }
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:3000/api/v1';
+    // Use the local network IP for both Android emulator and real device.
+    // 10.0.2.2 only works on the Android emulator, not on a real device.
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      return 'http://$_devServerIp:3000/api/v1';
     }
     return 'http://localhost:3000/api/v1';
   }
@@ -18,8 +26,8 @@ class ApiClient {
 
   ApiClient() : _dio = Dio(BaseOptions(
     baseUrl: baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 10),
+    connectTimeout: const Duration(seconds: 15),
+    receiveTimeout: const Duration(seconds: 15),
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
