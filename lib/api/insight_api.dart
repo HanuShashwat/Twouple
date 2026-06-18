@@ -20,4 +20,17 @@ class InsightApi {
     final response = await _apiClient.patch('/insights/tasks/$taskId/toggle');
     return UserTaskModel.fromJson(response.data['data']);
   }
+
+  /// Add a custom user task
+  Future<UserTaskModel> addCustomTask(String type, String taskText, String date) async {
+    final response = await _apiClient.post(
+      '/insights/tasks',
+      data: {
+        'type': type,
+        'task_text': taskText,
+        'date': date,
+      },
+    );
+    return UserTaskModel.fromJson(response.data['data']);
+  }
 }
