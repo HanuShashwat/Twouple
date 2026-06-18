@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/widgets/celestial_background.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../chat/presentation/bloc/chat_bloc.dart';
-import '../../../../chat/data/chat_repository.dart';
+import '../../../../chat/presentation/bloc/aura_chat_bloc.dart';
 class AIAssistantView extends StatelessWidget {
   const AIAssistantView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ChatBloc(ChatRepository()), // Load history if needed
+      create: (context) => AuraChatBloc(),
       child: const _AIAssistantContent(),
     );
   }
@@ -111,7 +110,7 @@ class AIAssistantViewState extends State<_AIAssistantContent>
     setState(() => _isTyping = true);
     
     if (mounted) {
-      context.read<ChatBloc>().add(SendMessageEvent(trimmed));
+      context.read<AuraChatBloc>().add(SendAuraMessageEvent(trimmed));
     }
   }
 
@@ -129,21 +128,14 @@ class AIAssistantViewState extends State<_AIAssistantContent>
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ChatBloc, ChatState>(
+    return BlocListener<AuraChatBloc, AuraChatState>(
       listener: (context, state) {
-        if (state is ChatLoaded) {
-          if (state.messages.isNotEmpty) {
-            final latestMsg = state.messages.first;
-            if (latestMsg.senderId != 'me' && _isTyping) {
-              setState(() => _isTyping = false);
-              _addAIMessage(latestMsg.messageBody);
-            } else if (latestMsg.senderId == 'me' && _isTyping) {
-              // message sent successfully
-            }
-          }
-        } else if (state is ChatError) {
-           setState(() => _isTyping = false);
-           _addAIMessage("Sorry, I encountered an error: ${state.error}");
+        if (state is AuraResponseReceived) {
+          setState(() => _isTyping = false);
+          _addAIMessage(state.responseText);
+        } else if (state is AuraChatError) {
+          setState(() => _isTyping = false);
+          _addAIMessage("Sorry, I encountered an error. Please try again.");
         }
       },
       child: CelestialBackground(
