@@ -26,7 +26,7 @@ class _SplashPageState extends State<SplashPage> {
         final profile = await userApi.getCurrentUser();
         if (mounted) {
           if (profile.fullName == null || profile.fullName!.isEmpty) {
-            context.go('/onboarding/birth');
+            context.go('/onboarding-birth');
           } else {
             context.go('/home');
           }
