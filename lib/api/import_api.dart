@@ -7,24 +7,20 @@ class ImportApi {
 
   ImportApi({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
 
-  /// Upload a chat export file to the backend
-  Future<bool> uploadChatExport(File file) async {
-    try {
-      String fileName = file.path.split('/').last;
-      
-      FormData formData = FormData.fromMap({
-        "file": await MultipartFile.fromFile(file.path, filename: fileName),
-      });
+  /// Upload a WhatsApp chat .txt file for AI analysis.
+  /// Returns a map with 'analysis', 'message_count', 'analyzed_at'.
+  Future<Map<String, dynamic>> analyzeWhatsAppChat(File file) async {
+    String fileName = file.path.split(Platform.pathSeparator).last;
 
-      // Assuming the endpoint is /import/chat
-      final response = await _apiClient.post(
-        '/import/chat',
-        data: formData,
-      );
+    FormData formData = FormData.fromMap({
+      'chatFile': await MultipartFile.fromFile(file.path, filename: fileName),
+    });
 
-      return response.statusCode == 200 || response.statusCode == 201;
-    } catch (e) {
-      throw Exception('Failed to upload chat export: $e');
-    }
+    final response = await _apiClient.post(
+      '/import/chat',
+      data: formData,
+    );
+
+    return Map<String, dynamic>.from(response.data['data']);
   }
 }
