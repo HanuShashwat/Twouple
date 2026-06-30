@@ -4,17 +4,22 @@ import '../auth/token_manager.dart';
 import 'api_exceptions.dart';
 
 class ApiClient {
-  // ⚠️ IMPORTANT: Update this to your machine's local network IP.
-  // Find it by running `ipconfig` (Windows) or `ifconfig` (Mac/Linux).
-  // This IP must be accessible from your phone/emulator on the same Wi-Fi.
+  // ── Dev server IP (your local machine on same Wi-Fi) ──
   static const String _devServerIp = '192.168.29.16';
 
+  // ── Production URL (Render deployment — update after deploying) ──
+  static const String _productionBaseUrl = 'https://twouple-api.onrender.com/api/v1';
+
   static String get baseUrl {
+    // In release mode, always use the deployed production URL
+    if (kReleaseMode) {
+      return _productionBaseUrl;
+    }
+
+    // Dev mode: use local network IP for mobile devices
     if (kIsWeb) {
       return 'http://localhost:3000/api/v1';
     }
-    // Use the local network IP for both Android emulator and real device.
-    // 10.0.2.2 only works on the Android emulator, not on a real device.
     if (defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS) {
       return 'http://$_devServerIp:3000/api/v1';
