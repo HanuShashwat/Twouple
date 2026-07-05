@@ -13,4 +13,14 @@ class ChatRepository {
   Future<ChatMessageModel> sendMessage(String messageBody) async {
     return await _chatApi.sendMessage(messageBody);
   }
+
+  Stream<ChatMessageModel> get newMessageStream => _chatApi.newMessageStream;
+
+  Future<void> initSocket(String relationshipId) async {
+    await _chatApi.initSocket(relationshipId);
+  }
+
+  void disposeSocket() {
+    _chatApi.disposeSocket();
+  }
 }
