@@ -1,13 +1,18 @@
+import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class TokenManager {
   static const _storage = FlutterSecureStorage();
   static const _tokenKey = 'auth_token';
+  static final _authStateController = StreamController<bool>.broadcast();
+
+  static Stream<bool> get authStateStream => _authStateController.stream;
 
   /// Save JWT token securely
   static Future<void> saveToken(String token) async {
     await _storage.write(key: _tokenKey, value: token);
+    _authStateController.add(true);
   }
 
   /// Get the saved JWT token
@@ -18,6 +23,7 @@ class TokenManager {
   /// Delete the saved JWT token (logout)
   static Future<void> deleteToken() async {
     await _storage.delete(key: _tokenKey);
+    _authStateController.add(false);
   }
 
   /// Check if a valid (non-expired) token exists
