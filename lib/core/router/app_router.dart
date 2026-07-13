@@ -12,6 +12,7 @@ import '../../features/chatbot/presentation/pages/chatbot_page.dart';
 import '../../features/chat/presentation/pages/native_chat_page.dart';
 import '../../features/import/presentation/pages/import_page.dart';
 import '../../features/subscription/presentation/pages/paywall_page.dart';
+import '../../features/profile/presentation/pages/privacy_policy_page.dart';
 
 class AppRouter {
   static final router = GoRouter(
@@ -64,6 +65,10 @@ class AppRouter {
       GoRoute(
         path: '/paywall',
         builder: (context, state) => const PaywallPage(),
+      ),
+      GoRoute(
+        path: '/privacy-policy',
+        builder: (context, state) => const PrivacyPolicyPage(),
       ),
     ],
   );
