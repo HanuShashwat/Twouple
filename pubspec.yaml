@@ -47,6 +47,9 @@ dependencies:
   jwt_decoder: ^2.0.1
   intl: ^0.20.2
   socket_io_client: ^3.1.6
+  firebase_core: ^4.12.1
+  firebase_messaging: ^16.4.3
+  purchases_flutter: ^10.4.1
 
 dev_dependencies:
   flutter_test:
