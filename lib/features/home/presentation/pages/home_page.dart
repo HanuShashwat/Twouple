@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import '../../../../api/user_api.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import 'views/dashboard_view.dart';
@@ -13,9 +15,31 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncFcmToken();
+  }
+
+  Future<void> _syncFcmToken() async {
+    try {
+      final messaging = FirebaseMessaging.instance;
+      NotificationSettings settings = await messaging.requestPermission();
+      
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        String? token = await messaging.getToken();
+        if (token != null) {
+          final userApi = UserApi();
+          await userApi.updateFcmToken(token);
+        }
+      }
+    } catch (e) {
+      debugPrint('FCM Sync error: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
