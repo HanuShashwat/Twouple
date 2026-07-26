@@ -14,9 +14,41 @@ import '../../features/import/presentation/pages/import_page.dart';
 import '../../features/subscription/presentation/pages/paywall_page.dart';
 import '../../features/profile/presentation/pages/privacy_policy_page.dart';
 
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import '../../core/auth/token_manager.dart';
+
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen(
+      (dynamic _) => notifyListeners(),
+    );
+  }
+
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
 class AppRouter {
   static final router = GoRouter(
     initialLocation: '/splash',
+    refreshListenable: GoRouterRefreshStream(TokenManager.authStateStream),
+    redirect: (context, state) async {
+      final isLoggedIn = await TokenManager.hasValidToken();
+      final isSplash = state.matchedLocation == '/splash';
+      final isAuth = state.matchedLocation == '/auth' || state.matchedLocation == '/landing';
+      
+      if (!isLoggedIn && !isSplash && !isAuth) {
+        return '/landing';
+      }
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/splash',
