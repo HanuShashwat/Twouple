@@ -26,4 +26,12 @@ class UserApi {
     final response = await _apiClient.delete('/users/me');
     return response.data['success'] == true;
   }
+
+  /// Update the FCM push notification token
+  Future<void> updateFcmToken(String token) async {
+    await _apiClient.put(
+      '/users/me/fcm',
+      data: {'fcm_token': token},
+    );
+  }
 }
